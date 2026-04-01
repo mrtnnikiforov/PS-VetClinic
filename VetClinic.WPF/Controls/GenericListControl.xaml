@@ -1,0 +1,21 @@
+<UserControl x:Class="VetClinic.WPF.Controls.GenericListControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <StackPanel Margin="10">
+        <TextBlock Text="List View" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
+
+        <DataGrid x:Name="ListDataGrid"
+                  ItemsSource="{Binding Items}"
+                  SelectedItem="{Binding SelectedItem}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserAddRows="False"
+                  MaxHeight="500"
+                  SelectionMode="Single"/>
+
+        <StackPanel Orientation="Horizontal" Margin="0,10">
+            <Button Content="Clear" Command="{Binding ClearCommand}" Padding="20,5"/>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

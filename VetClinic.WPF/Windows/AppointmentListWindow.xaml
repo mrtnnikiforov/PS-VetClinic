@@ -1,0 +1,23 @@
+<Window x:Class="VetClinic.WPF.Windows.AppointmentListWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:VetClinic.WPF.Controls"
+        xmlns:converters="clr-namespace:VetClinic.WPF.Converters"
+        Title="Appointments" Height="600" Width="800">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <controls:GenericListControl Grid.Row="0" DataContext="{Binding ListVm}"/>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="10">
+            <Button Content="Complete" Command="{Binding CrudVm.CompleteCommand}" Padding="10,5" Margin="0,0,10,0"/>
+            <Button Content="Cancel" Command="{Binding CrudVm.CancelCommand}" Padding="10,5" Margin="0,0,10,0"/>
+            <Button Content="Delete" Command="{Binding CrudVm.DeleteCommand}" Padding="10,5" Margin="0,0,10,0"/>
+            <Button Content="Refresh" Command="{Binding CrudVm.LoadCommand}" Padding="10,5"/>
+        </StackPanel>
+    </Grid>
+</Window>

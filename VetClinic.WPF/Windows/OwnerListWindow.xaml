@@ -1,0 +1,31 @@
+<Window x:Class="VetClinic.WPF.Windows.OwnerListWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:VetClinic.WPF.Controls"
+        Title="Owners" Height="600" Width="800">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="250"/>
+        </Grid.ColumnDefinitions>
+
+        <controls:GenericListControl Grid.Column="0" DataContext="{Binding ListVm}"/>
+
+        <StackPanel Grid.Column="1" Margin="10">
+            <TextBlock Text="Owner Form" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+            <TextBlock Text="First Name"/>
+            <TextBox Text="{Binding CrudVm.FirstName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+            <TextBlock Text="Last Name"/>
+            <TextBox Text="{Binding CrudVm.LastName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+            <TextBlock Text="Phone"/>
+            <TextBox Text="{Binding CrudVm.Phone, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+            <TextBlock Text="Email"/>
+            <TextBox Text="{Binding CrudVm.Email, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+            <TextBlock Text="Address"/>
+            <TextBox Text="{Binding CrudVm.Address, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
+            <Button Content="Add" Command="{Binding CrudVm.AddCommand}" Padding="5" Margin="0,0,0,5"/>
+            <Button Content="Update" Command="{Binding CrudVm.UpdateCommand}" Padding="5" Margin="0,0,0,5"/>
+            <Button Content="Delete" Command="{Binding CrudVm.DeleteCommand}" Padding="5"/>
+        </StackPanel>
+    </Grid>
+</Window>

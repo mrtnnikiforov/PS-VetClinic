@@ -1,0 +1,46 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="VetClinic.Avalonia.Windows.AppointmentSchedulerWindow"
+        Title="Schedule Appointment" Height="500" Width="500">
+    <StackPanel Margin="20">
+        <TextBlock Text="Schedule New Appointment" FontSize="20" FontWeight="Bold" Margin="0,0,0,20"/>
+
+        <TextBlock Text="Select Dog" FontWeight="SemiBold"/>
+        <ComboBox ItemsSource="{Binding Dogs}" SelectedItem="{Binding SelectedDog}" Margin="0,0,0,10">
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Name}"/>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+
+        <TextBlock Text="Select Veterinarian" FontWeight="SemiBold"/>
+        <ComboBox ItemsSource="{Binding Veterinarians}" SelectedItem="{Binding SelectedVet}" Margin="0,0,0,10">
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding FirstName}"/>
+                        <TextBlock Text=" "/>
+                        <TextBlock Text="{Binding LastName}"/>
+                        <TextBlock Text=" - "/>
+                        <TextBlock Text="{Binding Specialization}"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+
+        <TextBlock Text="Date" FontWeight="SemiBold"/>
+        <DatePicker SelectedDate="{Binding AppointmentDate}" Margin="0,0,0,10"/>
+
+        <TextBlock Text="Reason" FontWeight="SemiBold"/>
+        <TextBox Text="{Binding Reason}" Margin="0,0,0,10"/>
+
+        <TextBlock Text="Notes" FontWeight="SemiBold"/>
+        <TextBox Text="{Binding Notes}" Height="60"
+                 TextWrapping="Wrap" AcceptsReturn="True" Margin="0,0,0,15"/>
+
+        <Button Content="Schedule Appointment" Command="{Binding ScheduleCommand}" Padding="15,8" HorizontalAlignment="Left"/>
+
+        <TextBlock Text="{Binding StatusMessage}" Foreground="Green" FontWeight="SemiBold" Margin="0,10,0,0"/>
+    </StackPanel>
+</Window>

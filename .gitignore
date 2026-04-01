@@ -1,0 +1,22 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Visual Studio
+.vs/
+*.rsuser
+[Dd]ebug/
+[Rr]elease/
+
+## NuGet
+*.nupkg
+**/[Pp]ackages/*
+
+## Database files
+*.db
+*.db-shm
+*.db-wal

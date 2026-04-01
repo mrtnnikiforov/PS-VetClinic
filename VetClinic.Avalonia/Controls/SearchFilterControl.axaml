@@ -1,0 +1,35 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:VetClinic.Avalonia.Converters"
+             x:Class="VetClinic.Avalonia.Controls.SearchFilterControl">
+
+    <UserControl.Resources>
+        <converters:EnumValuesConverter x:Key="EnumValuesConverter"/>
+    </UserControl.Resources>
+
+    <StackPanel Margin="10">
+        <TextBlock Text="Search Filters" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
+
+        <ItemsControl ItemsSource="{Binding FilterFields}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal" Margin="0,4">
+                        <TextBlock Text="{Binding DisplayLabel}" Width="150" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                        <TextBox Text="{Binding Value}" Width="200"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <StackPanel Orientation="Horizontal" Margin="0,10">
+            <Button Content="Search" Command="{Binding SearchCommand}" Padding="20,5" Margin="0,0,10,0"/>
+            <Button Content="Clear" Command="{Binding ClearCommand}" Padding="20,5"/>
+        </StackPanel>
+
+        <TextBlock Text="Results" FontSize="16" FontWeight="Bold" Margin="0,15,0,5"/>
+        <DataGrid ItemsSource="{Binding Results}"
+                  IsReadOnly="True"
+                  MaxHeight="400"
+                  CanUserResizeColumns="True"/>
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,7 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:VetClinic.Avalonia.Controls"
+        x:Class="VetClinic.Avalonia.Windows.AppointmentSearchWindow"
+        Title="Search Appointments" Height="600" Width="600">
+    <controls:SearchFilterControl DataContext="{Binding}"/>
+</Window>

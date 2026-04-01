@@ -1,0 +1,64 @@
+<UserControl x:Class="VetClinic.WPF.Controls.SearchFilterControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:VetClinic.WPF.Converters">
+
+    <UserControl.Resources>
+        <converters:EnumValuesConverter x:Key="EnumValuesConverter"/>
+
+        <DataTemplate x:Key="StringTemplate">
+            <StackPanel Orientation="Horizontal" Margin="0,4">
+                <TextBlock Text="{Binding DisplayLabel}" Width="150" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                <TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}" Width="200"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="NumericTemplate">
+            <StackPanel Orientation="Horizontal" Margin="0,4">
+                <TextBlock Text="{Binding DisplayLabel}" Width="150" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                <TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}" Width="200"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="DateTemplate">
+            <StackPanel Orientation="Horizontal" Margin="0,4">
+                <TextBlock Text="{Binding DisplayLabel}" Width="150" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                <DatePicker SelectedDate="{Binding Value, UpdateSourceTrigger=PropertyChanged}" Width="200"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="EnumTemplate">
+            <StackPanel Orientation="Horizontal" Margin="0,4">
+                <TextBlock Text="{Binding DisplayLabel}" Width="150" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                <ComboBox ItemsSource="{Binding PropertyType, Converter={StaticResource EnumValuesConverter}}"
+                          SelectedItem="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                          Width="200"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <converters:FilterFieldTemplateSelector x:Key="FieldTemplateSelector"
+            StringTemplate="{StaticResource StringTemplate}"
+            NumericTemplate="{StaticResource NumericTemplate}"
+            DateTemplate="{StaticResource DateTemplate}"
+            EnumTemplate="{StaticResource EnumTemplate}"/>
+    </UserControl.Resources>
+
+    <StackPanel Margin="10">
+        <TextBlock Text="Search Filters" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
+
+        <ItemsControl ItemsSource="{Binding FilterFields}"
+                      ItemTemplateSelector="{StaticResource FieldTemplateSelector}"/>
+
+        <StackPanel Orientation="Horizontal" Margin="0,10">
+            <Button Content="Search" Command="{Binding SearchCommand}" Padding="20,5" Margin="0,0,10,0"/>
+            <Button Content="Clear" Command="{Binding ClearCommand}" Padding="20,5"/>
+        </StackPanel>
+
+        <TextBlock Text="Results" FontSize="16" FontWeight="Bold" Margin="0,15,0,5"/>
+        <DataGrid ItemsSource="{Binding Results}"
+                  AutoGenerateColumns="True"
+                  IsReadOnly="True"
+                  MaxHeight="400"
+                  CanUserAddRows="False"/>
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,33 @@
+<Window x:Class="VetClinic.WPF.Windows.MedicalRecordWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:VetClinic.WPF.Controls"
+        Title="Medical Records" Height="600" Width="800">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="280"/>
+        </Grid.ColumnDefinitions>
+
+        <controls:GenericListControl Grid.Column="0" DataContext="{Binding ListVm}"/>
+
+        <StackPanel Grid.Column="1" Margin="10">
+            <TextBlock Text="Medical Record Form" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+            <TextBlock Text="Date"/>
+            <DatePicker SelectedDate="{Binding CrudVm.Date}" Margin="0,0,0,5"/>
+            <TextBlock Text="Diagnosis"/>
+            <TextBox Text="{Binding CrudVm.Diagnosis, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+            <TextBlock Text="Treatment"/>
+            <TextBox Text="{Binding CrudVm.Treatment, UpdateSourceTrigger=PropertyChanged}" Height="50" TextWrapping="Wrap" Margin="0,0,0,5"/>
+            <TextBlock Text="Medications"/>
+            <TextBox Text="{Binding CrudVm.Medications, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+            <TextBlock Text="Cost"/>
+            <TextBox Text="{Binding CrudVm.Cost, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+            <TextBlock Text="Appointment ID"/>
+            <TextBox Text="{Binding CrudVm.AppointmentId, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
+            <Button Content="Add" Command="{Binding CrudVm.AddCommand}" Padding="5" Margin="0,0,0,5"/>
+            <Button Content="Update" Command="{Binding CrudVm.UpdateCommand}" Padding="5" Margin="0,0,0,5"/>
+            <Button Content="Delete" Command="{Binding CrudVm.DeleteCommand}" Padding="5"/>
+        </StackPanel>
+    </Grid>
+</Window>

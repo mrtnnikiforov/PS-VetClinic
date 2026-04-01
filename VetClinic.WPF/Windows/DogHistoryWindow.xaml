@@ -1,0 +1,26 @@
+<Window x:Class="VetClinic.WPF.Windows.DogHistoryWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Dog Visit History" Height="650" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="10">
+            <TextBlock Text="Dog Visit History" FontSize="20" FontWeight="Bold" Margin="0,0,0,10"/>
+            <TextBlock Text="Select Dog" FontWeight="SemiBold"/>
+            <ComboBox ItemsSource="{Binding Dogs}" SelectedItem="{Binding SelectedDog}" DisplayMemberPath="Name" Width="300" HorizontalAlignment="Left"/>
+        </StackPanel>
+
+        <GroupBox Grid.Row="1" Header="Appointments" Margin="10,5">
+            <DataGrid ItemsSource="{Binding Appointments}" AutoGenerateColumns="True" IsReadOnly="True" CanUserAddRows="False"/>
+        </GroupBox>
+
+        <GroupBox Grid.Row="2" Header="Medical Records" Margin="10,5">
+            <DataGrid ItemsSource="{Binding MedicalRecords}" AutoGenerateColumns="True" IsReadOnly="True" CanUserAddRows="False"/>
+        </GroupBox>
+    </Grid>
+</Window>

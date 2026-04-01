@@ -1,0 +1,26 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="VetClinic.Avalonia.Windows.DogHistoryWindow"
+        Title="Dog Visit History" Height="650" Width="800">
+    <Grid RowDefinitions="Auto,*,*">
+        <StackPanel Grid.Row="0" Margin="10">
+            <TextBlock Text="Dog Visit History" FontSize="20" FontWeight="Bold" Margin="0,0,0,10"/>
+            <TextBlock Text="Select Dog" FontWeight="SemiBold"/>
+            <ComboBox ItemsSource="{Binding Dogs}" SelectedItem="{Binding SelectedDog}" Width="300" HorizontalAlignment="Left">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}"/>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </StackPanel>
+
+        <HeaderedContentControl Grid.Row="1" Header="Appointments" Margin="10,5">
+            <DataGrid ItemsSource="{Binding Appointments}" IsReadOnly="True" CanUserResizeColumns="True"/>
+        </HeaderedContentControl>
+
+        <HeaderedContentControl Grid.Row="2" Header="Medical Records" Margin="10,5">
+            <DataGrid ItemsSource="{Binding MedicalRecords}" IsReadOnly="True" CanUserResizeColumns="True"/>
+        </HeaderedContentControl>
+    </Grid>
+</Window>
