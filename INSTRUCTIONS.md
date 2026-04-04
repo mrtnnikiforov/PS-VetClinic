@@ -39,9 +39,6 @@ dotnet restore VetClinic.sln
 ```powershell
 dotnet build VetClinic.sln
 ```
-
-If there are build errors, share them and we'll fix them.
-
 ---
 
 ## Run the WPF App
