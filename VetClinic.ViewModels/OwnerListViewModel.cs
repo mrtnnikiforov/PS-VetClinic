@@ -61,6 +61,9 @@ namespace VetClinic.ViewModels
 
         private void AddOwner()
         {
+            ClearError();
+            if (!ValidateOwnerInput()) return;
+
             var owner = new Owner
             {
                 FirstName = FirstName,
@@ -69,29 +72,57 @@ namespace VetClinic.ViewModels
                 Email = Email,
                 Address = Address
             };
-            _repository.Add(owner);
-            LoadData();
-            ClearForm();
+
+            try
+            {
+                _repository.Add(owner);
+                LoadData();
+                ClearForm();
+            }
+            catch (Exception ex)
+            {
+                SetError($"Could not add owner: {ex.InnerException?.Message ?? ex.Message}");
+            }
         }
 
         private void UpdateOwner()
         {
+            ClearError();
             if (SelectedOwner == null) return;
+            if (!ValidateOwnerInput()) return;
+
             SelectedOwner.FirstName = FirstName;
             SelectedOwner.LastName = LastName;
             SelectedOwner.Phone = Phone;
             SelectedOwner.Email = Email;
             SelectedOwner.Address = Address;
-            _repository.Update(SelectedOwner);
-            LoadData();
+
+            try
+            {
+                _repository.Update(SelectedOwner);
+                LoadData();
+            }
+            catch (Exception ex)
+            {
+                SetError($"Could not update owner: {ex.InnerException?.Message ?? ex.Message}");
+            }
         }
 
         private void DeleteOwner()
         {
+            ClearError();
             if (SelectedOwner == null) return;
-            _repository.Delete(SelectedOwner.Id);
-            LoadData();
-            ClearForm();
+
+            try
+            {
+                _repository.Delete(SelectedOwner.Id);
+                LoadData();
+                ClearForm();
+            }
+            catch (Exception ex)
+            {
+                SetError($"Could not delete owner: {ex.InnerException?.Message ?? ex.Message}");
+            }
         }
 
         private void ClearForm()
@@ -101,6 +132,23 @@ namespace VetClinic.ViewModels
             Phone = string.Empty;
             Email = string.Empty;
             Address = string.Empty;
+        }
+
+        private bool ValidateOwnerInput()
+        {
+            if (string.IsNullOrWhiteSpace(FirstName))
+            {
+                SetError("First name is required.");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(LastName))
+            {
+                SetError("Last name is required.");
+                return false;
+            }
+
+            return true;
         }
     }
 }

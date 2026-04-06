@@ -64,6 +64,9 @@ namespace VetClinic.ViewModels
 
         private void AddRecord()
         {
+            ClearError();
+            if (!ValidateRecordInput()) return;
+
             var record = new MedicalRecord
             {
                 Date = Date,
@@ -73,29 +76,58 @@ namespace VetClinic.ViewModels
                 Cost = Cost,
                 AppointmentId = AppointmentId
             };
-            _repository.Add(record);
-            LoadData();
-            ClearForm();
+
+            try
+            {
+                _repository.Add(record);
+                LoadData();
+                ClearForm();
+            }
+            catch (Exception ex)
+            {
+                SetError(ToUserMessage(ex, "Could not add medical record"));
+            }
         }
 
         private void UpdateRecord()
         {
+            ClearError();
             if (SelectedRecord == null) return;
+            if (!ValidateRecordInput()) return;
+
             SelectedRecord.Date = Date;
             SelectedRecord.Diagnosis = Diagnosis;
             SelectedRecord.Treatment = Treatment;
             SelectedRecord.Medications = Medications;
             SelectedRecord.Cost = Cost;
-            _repository.Update(SelectedRecord);
-            LoadData();
+            SelectedRecord.AppointmentId = AppointmentId;
+
+            try
+            {
+                _repository.Update(SelectedRecord);
+                LoadData();
+            }
+            catch (Exception ex)
+            {
+                SetError(ToUserMessage(ex, "Could not update medical record"));
+            }
         }
 
         private void DeleteRecord()
         {
+            ClearError();
             if (SelectedRecord == null) return;
-            _repository.Delete(SelectedRecord.Id);
-            LoadData();
-            ClearForm();
+
+            try
+            {
+                _repository.Delete(SelectedRecord.Id);
+                LoadData();
+                ClearForm();
+            }
+            catch (Exception ex)
+            {
+                SetError(ToUserMessage(ex, "Could not delete medical record"));
+            }
         }
 
         private void ClearForm()
@@ -106,6 +138,40 @@ namespace VetClinic.ViewModels
             Medications = string.Empty;
             Cost = 0;
             AppointmentId = 0;
+        }
+
+        private bool ValidateRecordInput()
+        {
+            if (string.IsNullOrWhiteSpace(Diagnosis))
+            {
+                SetError("Diagnosis is required.");
+                return false;
+            }
+
+            if (AppointmentId <= 0)
+            {
+                SetError("Appointment ID must be a positive number.");
+                return false;
+            }
+
+            if (Cost < 0)
+            {
+                SetError("Cost cannot be negative.");
+                return false;
+            }
+
+            return true;
+        }
+
+        private static string ToUserMessage(Exception ex, string fallback)
+        {
+            var message = ex.InnerException?.Message ?? ex.Message;
+            if (message.Contains("FOREIGN KEY", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Invalid Appointment ID. Please select an existing appointment.";
+            }
+
+            return $"{fallback}: {message}";
         }
     }
 }

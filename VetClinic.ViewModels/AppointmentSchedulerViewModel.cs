@@ -86,7 +86,17 @@ namespace VetClinic.ViewModels
 
         private void ScheduleAppointment()
         {
-            if (SelectedDog == null || SelectedVet == null) return;
+            if (SelectedDog == null || SelectedVet == null)
+            {
+                StatusMessage = "Please select both a dog and a veterinarian.";
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(Reason))
+            {
+                StatusMessage = "Reason is required.";
+                return;
+            }
 
             var appointment = new Appointment
             {
@@ -98,8 +108,16 @@ namespace VetClinic.ViewModels
                 VeterinarianId = SelectedVet.Id
             };
 
-            _appointmentRepository.Add(appointment);
-            StatusMessage = $"Appointment scheduled for {SelectedDog.Name} with {SelectedVet.FirstName} {SelectedVet.LastName} on {AppointmentDate:d}";
+            try
+            {
+                _appointmentRepository.Add(appointment);
+                StatusMessage = $"Appointment scheduled for {SelectedDog.Name} with {SelectedVet.FirstName} {SelectedVet.LastName} on {AppointmentDate:d}";
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Could not schedule appointment: {ex.InnerException?.Message ?? ex.Message}";
+                return;
+            }
 
             Reason = string.Empty;
             Notes = string.Empty;

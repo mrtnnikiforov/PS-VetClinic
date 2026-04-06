@@ -61,6 +61,9 @@ namespace VetClinic.ViewModels
 
         private void AddVet()
         {
+            ClearError();
+            if (!ValidateVetInput()) return;
+
             var vet = new Veterinarian
             {
                 FirstName = FirstName,
@@ -69,29 +72,57 @@ namespace VetClinic.ViewModels
                 LicenseNumber = LicenseNumber,
                 Phone = Phone
             };
-            _repository.Add(vet);
-            LoadData();
-            ClearForm();
+
+            try
+            {
+                _repository.Add(vet);
+                LoadData();
+                ClearForm();
+            }
+            catch (Exception ex)
+            {
+                SetError($"Could not add veterinarian: {ex.InnerException?.Message ?? ex.Message}");
+            }
         }
 
         private void UpdateVet()
         {
+            ClearError();
             if (SelectedVet == null) return;
+            if (!ValidateVetInput()) return;
+
             SelectedVet.FirstName = FirstName;
             SelectedVet.LastName = LastName;
             SelectedVet.Specialization = Specialization;
             SelectedVet.LicenseNumber = LicenseNumber;
             SelectedVet.Phone = Phone;
-            _repository.Update(SelectedVet);
-            LoadData();
+
+            try
+            {
+                _repository.Update(SelectedVet);
+                LoadData();
+            }
+            catch (Exception ex)
+            {
+                SetError($"Could not update veterinarian: {ex.InnerException?.Message ?? ex.Message}");
+            }
         }
 
         private void DeleteVet()
         {
+            ClearError();
             if (SelectedVet == null) return;
-            _repository.Delete(SelectedVet.Id);
-            LoadData();
-            ClearForm();
+
+            try
+            {
+                _repository.Delete(SelectedVet.Id);
+                LoadData();
+                ClearForm();
+            }
+            catch (Exception ex)
+            {
+                SetError($"Could not delete veterinarian: {ex.InnerException?.Message ?? ex.Message}");
+            }
         }
 
         private void ClearForm()
@@ -101,6 +132,29 @@ namespace VetClinic.ViewModels
             Specialization = string.Empty;
             LicenseNumber = string.Empty;
             Phone = string.Empty;
+        }
+
+        private bool ValidateVetInput()
+        {
+            if (string.IsNullOrWhiteSpace(FirstName))
+            {
+                SetError("First name is required.");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(LastName))
+            {
+                SetError("Last name is required.");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(LicenseNumber))
+            {
+                SetError("License number is required.");
+                return false;
+            }
+
+            return true;
         }
     }
 }

@@ -7,6 +7,13 @@ namespace VetClinic.Common
     {
         public event PropertyChangedEventHandler? PropertyChanged;
 
+        private string _errorMessage = string.Empty;
+        public string ErrorMessage
+        {
+            get => _errorMessage;
+            set => SetProperty(ref _errorMessage, value);
+        }
+
         protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -20,6 +27,16 @@ namespace VetClinic.Common
             field = value;
             OnPropertyChanged(propertyName);
             return true;
+        }
+
+        protected void ClearError()
+        {
+            ErrorMessage = string.Empty;
+        }
+
+        protected void SetError(string message)
+        {
+            ErrorMessage = message;
         }
     }
 }

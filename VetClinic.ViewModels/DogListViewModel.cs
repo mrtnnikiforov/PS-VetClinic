@@ -64,6 +64,9 @@ namespace VetClinic.ViewModels
 
         private void AddDog()
         {
+            ClearError();
+            if (!ValidateDogInput()) return;
+
             var dog = new Dog
             {
                 Name = Name,
@@ -73,30 +76,58 @@ namespace VetClinic.ViewModels
                 ChipNumber = ChipNumber,
                 OwnerId = OwnerId
             };
-            _repository.Add(dog);
-            LoadData();
-            ClearForm();
+
+            try
+            {
+                _repository.Add(dog);
+                LoadData();
+                ClearForm();
+            }
+            catch (Exception ex)
+            {
+                SetError(ToUserMessage(ex, "Could not add dog"));
+            }
         }
 
         private void UpdateDog()
         {
+            ClearError();
             if (SelectedDog == null) return;
+            if (!ValidateDogInput()) return;
+
             SelectedDog.Name = Name;
             SelectedDog.Breed = Breed;
             SelectedDog.DateOfBirth = DateOfBirth;
             SelectedDog.WeightKg = WeightKg;
             SelectedDog.ChipNumber = ChipNumber;
             SelectedDog.OwnerId = OwnerId;
-            _repository.Update(SelectedDog);
-            LoadData();
+
+            try
+            {
+                _repository.Update(SelectedDog);
+                LoadData();
+            }
+            catch (Exception ex)
+            {
+                SetError(ToUserMessage(ex, "Could not update dog"));
+            }
         }
 
         private void DeleteDog()
         {
+            ClearError();
             if (SelectedDog == null) return;
-            _repository.Delete(SelectedDog.Id);
-            LoadData();
-            ClearForm();
+
+            try
+            {
+                _repository.Delete(SelectedDog.Id);
+                LoadData();
+                ClearForm();
+            }
+            catch (Exception ex)
+            {
+                SetError(ToUserMessage(ex, "Could not delete dog"));
+            }
         }
 
         private void ClearForm()
@@ -107,6 +138,52 @@ namespace VetClinic.ViewModels
             WeightKg = 0;
             ChipNumber = string.Empty;
             OwnerId = 0;
+        }
+
+        private bool ValidateDogInput()
+        {
+            if (string.IsNullOrWhiteSpace(Name))
+            {
+                SetError("Name is required.");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(Breed))
+            {
+                SetError("Breed is required.");
+                return false;
+            }
+
+            if (WeightKg <= 0)
+            {
+                SetError("Weight must be greater than 0.");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(ChipNumber))
+            {
+                SetError("Chip Number is required.");
+                return false;
+            }
+
+            if (OwnerId <= 0)
+            {
+                SetError("Owner ID must be a positive number.");
+                return false;
+            }
+
+            return true;
+        }
+
+        private static string ToUserMessage(Exception ex, string fallback)
+        {
+            var message = ex.InnerException?.Message ?? ex.Message;
+            if (message.Contains("FOREIGN KEY", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Invalid Owner ID. Use an existing owner (for seed data: 1, 2, or 3).";
+            }
+
+            return $"{fallback}: {message}";
         }
     }
 }
