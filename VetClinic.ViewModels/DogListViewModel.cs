@@ -43,6 +43,21 @@ namespace VetClinic.ViewModels
         private int _ownerId;
         public int OwnerId { get => _ownerId; set => SetProperty(ref _ownerId, value); }
 
+        private string _successMessage = string.Empty;
+        public string SuccessMessage
+        {
+            get => _successMessage;
+            set
+            {
+                if (SetProperty(ref _successMessage, value))
+                {
+                    OnPropertyChanged(nameof(HasSuccessMessage));
+                }
+            }
+        }
+
+        public bool HasSuccessMessage => !string.IsNullOrWhiteSpace(SuccessMessage);
+
         public ICommand LoadCommand { get; }
         public ICommand AddCommand { get; }
         public ICommand UpdateCommand { get; }
@@ -61,12 +76,19 @@ namespace VetClinic.ViewModels
 
         public void LoadData()
         {
-            Dogs = new ObservableCollection<Dog>(_repository.GetAll());
+            try
+            {
+                Dogs = new ObservableCollection<Dog>(_repository.GetAll());
+            }
+            catch (Exception ex)
+            {
+                SetError($"Could not load dogs: {ex.InnerException?.Message ?? ex.Message}");
+            }
         }
 
         private void AddDog()
         {
-            ClearError();
+            ClearMessages();
             if (!ValidateDogInput()) return;
 
             var dog = new Dog
@@ -84,6 +106,7 @@ namespace VetClinic.ViewModels
                 _repository.Add(dog);
                 LoadData();
                 ClearForm();
+                SuccessMessage = "Dog added successfully.";
             }
             catch (Exception ex)
             {
@@ -93,7 +116,7 @@ namespace VetClinic.ViewModels
 
         private void UpdateDog()
         {
-            ClearError();
+            ClearMessages();
             if (SelectedDog == null) return;
             if (!ValidateDogInput()) return;
 
@@ -117,7 +140,7 @@ namespace VetClinic.ViewModels
 
         private void DeleteDog()
         {
-            ClearError();
+            ClearMessages();
             if (SelectedDog == null) return;
 
             try
@@ -140,6 +163,12 @@ namespace VetClinic.ViewModels
             WeightKg = 0;
             ChipNumber = string.Empty;
             OwnerId = 0;
+        }
+
+        private void ClearMessages()
+        {
+            ClearError();
+            SuccessMessage = string.Empty;
         }
 
         private bool ValidateDogInput()
@@ -174,13 +203,29 @@ namespace VetClinic.ViewModels
                 return false;
             }
 
+            var normalizedChip = ChipNumber.Trim();
+            if (!TryValidateUniqueChipNumber(normalizedChip))
+            {
+                return false;
+            }
+
             if (OwnerId <= 0)
             {
                 SetError("Owner ID must be a positive number.");
                 return false;
             }
 
-            var ownerIds = _ownerRepository.GetAll().Select(o => o.Id).OrderBy(id => id).ToList();
+            List<int> ownerIds;
+            try
+            {
+                ownerIds = _ownerRepository.GetAll().Select(o => o.Id).OrderBy(id => id).ToList();
+            }
+            catch (Exception ex)
+            {
+                SetError($"Could not validate Owner ID: {ex.InnerException?.Message ?? ex.Message}");
+                return false;
+            }
+
             if (!ownerIds.Contains(OwnerId))
             {
                 var idsList = ownerIds.Count == 0 ? "none" : string.Join(", ", ownerIds);
@@ -191,12 +236,42 @@ namespace VetClinic.ViewModels
             return true;
         }
 
+        private bool TryValidateUniqueChipNumber(string normalizedChip)
+        {
+            try
+            {
+                var dogs = _repository.GetAll();
+                var hasDuplicate = dogs.Any(d =>
+                    d.Id != SelectedDog?.Id &&
+                    string.Equals(d.ChipNumber?.Trim(), normalizedChip, StringComparison.OrdinalIgnoreCase));
+
+                if (hasDuplicate)
+                {
+                    SetError("Chip Number already exists. Each dog must have a unique chip number.");
+                    return false;
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                SetError($"Could not validate Chip Number: {ex.InnerException?.Message ?? ex.Message}");
+                return false;
+            }
+        }
+
         private static string ToUserMessage(Exception ex, string fallback)
         {
             var message = ex.InnerException?.Message ?? ex.Message;
             if (message.Contains("FOREIGN KEY", StringComparison.OrdinalIgnoreCase))
             {
                 return "Invalid Owner ID. Use an existing owner (for seed data: 1, 2, or 3).";
+            }
+
+            if (message.Contains("UNIQUE", StringComparison.OrdinalIgnoreCase) ||
+                message.Contains("duplicate", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Chip Number already exists. Each dog must have a unique chip number.";
             }
 
             return $"{fallback}: {message}";
