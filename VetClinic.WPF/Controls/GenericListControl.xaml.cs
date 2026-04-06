@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Windows.Controls;
 using System.Windows.Data;
-using VetClinic.Common;
+using CommonColumnDefinition = VetClinic.Common.ColumnDefinition;
 using VetClinic.ViewModels;
 
 namespace VetClinic.WPF.Controls
@@ -37,7 +37,7 @@ namespace VetClinic.WPF.Controls
             }
         }
 
-        private void RebuildColumns(ObservableCollection<ColumnDefinition> columns)
+        private void RebuildColumns(ObservableCollection<CommonColumnDefinition> columns)
         {
             ListDataGrid.Columns.Clear();
             foreach (var col in columns)

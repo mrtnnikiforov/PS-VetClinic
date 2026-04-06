@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using Avalonia.Controls;
 using Avalonia.Data;
-using VetClinic.Common;
+using CommonColumnDefinition = VetClinic.Common.ColumnDefinition;
 using VetClinic.ViewModels;
 
 namespace VetClinic.Avalonia.Controls
@@ -32,7 +32,7 @@ namespace VetClinic.Avalonia.Controls
             }
         }
 
-        private void RebuildColumns(ObservableCollection<ColumnDefinition> columns)
+        private void RebuildColumns(ObservableCollection<CommonColumnDefinition> columns)
         {
             ListDataGrid.Columns.Clear();
             foreach (var col in columns)

@@ -49,7 +49,7 @@ dotnet run --project VetClinic.WPF
 ```
 
 **What you should see:**
-- Main window with dark header "VetClinic", database switcher (ComboBox), and left navigation menu
+- Main window with dark header, "VetClinic", database switcher (ComboBox), and left navigation menu
 - Click each button to open windows:
   - **Dogs** — list + CRUD form
   - **Owners** — list + CRUD form
@@ -85,19 +85,17 @@ dotnet run --project VetClinic.Avalonia
 3. Switch ComboBox to **SQL Server**
 4. Click **Dogs** again — same seed data but from SQL Server LocalDB
 5. Add a new dog in SQL Server
-6. Switch back to SQLite — the new dog is NOT there (proves separate databases)
+6. Switch back to SQLite — the new dog is NOT there
 
 ### 10. Test generic search filter
 1. Click **Search Dogs**
 2. Type "Rex" in the Name field → click Search → only Rex appears
 3. Type "German" in the Breed field → click Search → filtered results
 4. Click Clear → filters reset
-5. Now click **Search Owners** — same control, different fields (First Name, Last Name, Phone, Email)
 
 ### 11. Test generic list display
 1. Click **Dogs** — see columns: Name, Breed, Date of Birth, Weight, Chip Number
 2. Click a row — form on the right fills with that dog's data
-3. Click **Appointments** — same generic list control, different columns: Date, Reason, Status, Notes
 
 ### 12. Test appointment scheduling
 1. Click **Schedule Appointment**
@@ -143,10 +141,3 @@ pandoc Documentation.md -o Documentation.docx
 2. Preview it (Ctrl+Shift+V)
 3. Select all, copy, paste into Word
 4. Fix formatting as needed
-
-### 15. Fill in placeholders
-- Replace `[Име Фамилия]` with your names
-- Replace `[XXXXX]` with faculty numbers
-- Replace `[Специалност]`, `[Курс / Група]`
-- Insert the screenshots at the `[Screenshot: ...]` markers
-- Export to PDF from Word
