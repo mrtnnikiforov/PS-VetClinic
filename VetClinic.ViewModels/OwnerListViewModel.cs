@@ -21,7 +21,14 @@ namespace VetClinic.ViewModels
         public Owner? SelectedOwner
         {
             get => _selectedOwner;
-            set => SetProperty(ref _selectedOwner, value);
+            set
+            {
+                if (SetProperty(ref _selectedOwner, value))
+                {
+                    (UpdateCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                    (DeleteCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                }
+            }
         }
 
         private string _firstName = string.Empty;

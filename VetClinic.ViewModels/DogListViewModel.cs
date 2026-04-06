@@ -22,7 +22,14 @@ namespace VetClinic.ViewModels
         public Dog? SelectedDog
         {
             get => _selectedDog;
-            set => SetProperty(ref _selectedDog, value);
+            set
+            {
+                if (SetProperty(ref _selectedDog, value))
+                {
+                    (UpdateCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                    (DeleteCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                }
+            }
         }
 
         private string _name = string.Empty;

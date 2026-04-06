@@ -21,7 +21,14 @@ namespace VetClinic.ViewModels
         public MedicalRecord? SelectedRecord
         {
             get => _selectedRecord;
-            set => SetProperty(ref _selectedRecord, value);
+            set
+            {
+                if (SetProperty(ref _selectedRecord, value))
+                {
+                    (UpdateCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                    (DeleteCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                }
+            }
         }
 
         private DateTime _date = DateTime.Today;

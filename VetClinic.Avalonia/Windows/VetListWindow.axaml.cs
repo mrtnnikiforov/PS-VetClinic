@@ -14,6 +14,13 @@ namespace VetClinic.Avalonia.Windows
             CrudVm = new VetListViewModel(mainVm.VetRepository);
             ListVm = new GenericListViewModel(typeof(Veterinarian));
             ListVm.SetItems(CrudVm.Veterinarians);
+            CrudVm.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(CrudVm.Veterinarians))
+                {
+                    ListVm.SetItems(CrudVm.Veterinarians);
+                }
+            };
             ListVm.ItemSelected += item =>
             {
                 if (item is Veterinarian vet)

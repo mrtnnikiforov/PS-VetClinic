@@ -14,6 +14,13 @@ namespace VetClinic.WPF.Windows
             CrudVm = new AppointmentListViewModel(mainVm.AppointmentRepository);
             ListVm = new GenericListViewModel(typeof(Appointment));
             ListVm.SetItems(CrudVm.Appointments);
+            CrudVm.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(CrudVm.Appointments))
+                {
+                    ListVm.SetItems(CrudVm.Appointments);
+                }
+            };
             ListVm.ItemSelected += item =>
             {
                 if (item is Appointment appt)
