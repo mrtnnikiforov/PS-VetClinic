@@ -28,6 +28,7 @@
 
         <TextBlock Text="Results" FontSize="16" FontWeight="Bold" Margin="0,15,0,5"/>
         <DataGrid ItemsSource="{Binding Results}"
+                  AutoGenerateColumns="True"
                   IsReadOnly="True"
                   MaxHeight="400"
                   CanUserResizeColumns="True"/>

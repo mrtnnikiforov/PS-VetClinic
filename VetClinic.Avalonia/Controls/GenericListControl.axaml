@@ -6,8 +6,8 @@
         <TextBlock Text="List View" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
 
         <DataGrid x:Name="ListDataGrid"
-                  ItemsSource="{Binding Items}"
                   SelectedItem="{Binding SelectedItem}"
+                  AutoGenerateColumns="False"
                   IsReadOnly="True"
                   MaxHeight="500"
                   SelectionMode="Single"
