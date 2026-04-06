@@ -14,8 +14,5 @@
                   MaxHeight="500"
                   SelectionMode="Single"/>
 
-        <StackPanel Orientation="Horizontal" Margin="0,10">
-            <Button Content="Clear" Command="{Binding ClearCommand}" Padding="20,5"/>
-        </StackPanel>
     </StackPanel>
 </UserControl>
