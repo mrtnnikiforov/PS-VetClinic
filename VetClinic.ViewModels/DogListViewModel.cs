@@ -9,6 +9,7 @@ namespace VetClinic.ViewModels
     public class DogListViewModel : ViewModelBase
     {
         private readonly IRepository<Dog> _repository;
+        private readonly IRepository<Owner> _ownerRepository;
 
         private ObservableCollection<Dog> _dogs = new();
         public ObservableCollection<Dog> Dogs
@@ -47,9 +48,10 @@ namespace VetClinic.ViewModels
         public ICommand UpdateCommand { get; }
         public ICommand DeleteCommand { get; }
 
-        public DogListViewModel(IRepository<Dog> repository)
+        public DogListViewModel(IRepository<Dog> repository, IRepository<Owner> ownerRepository)
         {
             _repository = repository;
+            _ownerRepository = ownerRepository;
             LoadCommand = new RelayCommand(_ => LoadData());
             AddCommand = new RelayCommand(_ => AddDog());
             UpdateCommand = new RelayCommand(_ => UpdateDog(), _ => SelectedDog != null);
@@ -142,15 +144,21 @@ namespace VetClinic.ViewModels
 
         private bool ValidateDogInput()
         {
-            if (string.IsNullOrWhiteSpace(Name))
+            if (string.IsNullOrWhiteSpace(Name) || Name.Trim().Length <= 2)
             {
-                SetError("Name is required.");
+                SetError("Name is required and must be longer than 2 characters.");
                 return false;
             }
 
-            if (string.IsNullOrWhiteSpace(Breed))
+            if (string.IsNullOrWhiteSpace(Breed) || Breed.Trim().Length <= 2)
             {
-                SetError("Breed is required.");
+                SetError("Breed is required and must be longer than 2 characters.");
+                return false;
+            }
+
+            if (DateOfBirth.Date > DateTime.Today)
+            {
+                SetError("Date of birth cannot be in the future.");
                 return false;
             }
 
@@ -169,6 +177,14 @@ namespace VetClinic.ViewModels
             if (OwnerId <= 0)
             {
                 SetError("Owner ID must be a positive number.");
+                return false;
+            }
+
+            var ownerIds = _ownerRepository.GetAll().Select(o => o.Id).OrderBy(id => id).ToList();
+            if (!ownerIds.Contains(OwnerId))
+            {
+                var idsList = ownerIds.Count == 0 ? "none" : string.Join(", ", ownerIds);
+                SetError($"Invalid Owner ID. Existing Owner IDs: {idsList}.");
                 return false;
             }
 

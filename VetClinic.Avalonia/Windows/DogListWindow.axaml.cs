@@ -11,7 +11,7 @@ namespace VetClinic.Avalonia.Windows
 
         public DogListWindow(MainViewModel mainVm)
         {
-            CrudVm = new DogListViewModel(mainVm.DogRepository);
+            CrudVm = new DogListViewModel(mainVm.DogRepository, mainVm.OwnerRepository);
             ListVm = new GenericListViewModel(typeof(Dog));
             ListVm.SetItems(CrudVm.Dogs);
             ListVm.ItemSelected += item =>
