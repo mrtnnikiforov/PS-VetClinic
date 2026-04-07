@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Text.RegularExpressions;
 using System.Windows.Input;
 using VetClinic.Common;
 using VetClinic.Model.Entities;
@@ -9,6 +10,7 @@ namespace VetClinic.ViewModels
     public class VetListViewModel : ViewModelBase
     {
         private readonly IRepository<Veterinarian> _repository;
+        private const string PhonePattern = @"^\+?[0-9]{7,15}$";
 
         private ObservableCollection<Veterinarian> _veterinarians = new();
         public ObservableCollection<Veterinarian> Veterinarians
@@ -46,6 +48,21 @@ namespace VetClinic.ViewModels
         private string _phone = string.Empty;
         public string Phone { get => _phone; set => SetProperty(ref _phone, value); }
 
+        private string _successMessage = string.Empty;
+        public string SuccessMessage
+        {
+            get => _successMessage;
+            set
+            {
+                if (SetProperty(ref _successMessage, value))
+                {
+                    OnPropertyChanged(nameof(HasSuccessMessage));
+                }
+            }
+        }
+
+        public bool HasSuccessMessage => !string.IsNullOrWhiteSpace(SuccessMessage);
+
         public ICommand LoadCommand { get; }
         public ICommand AddCommand { get; }
         public ICommand UpdateCommand { get; }
@@ -63,13 +80,21 @@ namespace VetClinic.ViewModels
 
         public void LoadData()
         {
-            Veterinarians = new ObservableCollection<Veterinarian>(_repository.GetAll());
+            try
+            {
+                Veterinarians = new ObservableCollection<Veterinarian>(_repository.GetAll());
+            }
+            catch (Exception ex)
+            {
+                SetError($"Could not load veterinarians: {ex.InnerException?.Message ?? ex.Message}");
+            }
         }
 
         private void AddVet()
         {
-            ClearError();
-            if (!ValidateVetInput()) return;
+            ClearMessages();
+            if (!ValidateVetInput(isUpdate: false)) return;
+            var normalizedPhoneForStorage = NormalizePhoneForStorage(Phone);
 
             var vet = new Veterinarian
             {
@@ -77,7 +102,7 @@ namespace VetClinic.ViewModels
                 LastName = LastName,
                 Specialization = Specialization,
                 LicenseNumber = LicenseNumber,
-                Phone = Phone
+                Phone = normalizedPhoneForStorage
             };
 
             try
@@ -85,6 +110,7 @@ namespace VetClinic.ViewModels
                 _repository.Add(vet);
                 LoadData();
                 ClearForm();
+                SuccessMessage = "Veterinarian added successfully.";
             }
             catch (Exception ex)
             {
@@ -94,20 +120,22 @@ namespace VetClinic.ViewModels
 
         private void UpdateVet()
         {
-            ClearError();
+            ClearMessages();
             if (SelectedVet == null) return;
-            if (!ValidateVetInput()) return;
+            if (!ValidateVetInput(isUpdate: true)) return;
+            var normalizedPhoneForStorage = NormalizePhoneForStorage(Phone);
 
             SelectedVet.FirstName = FirstName;
             SelectedVet.LastName = LastName;
             SelectedVet.Specialization = Specialization;
             SelectedVet.LicenseNumber = LicenseNumber;
-            SelectedVet.Phone = Phone;
+            SelectedVet.Phone = normalizedPhoneForStorage;
 
             try
             {
                 _repository.Update(SelectedVet);
                 LoadData();
+                SuccessMessage = "Veterinarian updated successfully.";
             }
             catch (Exception ex)
             {
@@ -117,7 +145,7 @@ namespace VetClinic.ViewModels
 
         private void DeleteVet()
         {
-            ClearError();
+            ClearMessages();
             if (SelectedVet == null) return;
 
             try
@@ -125,6 +153,7 @@ namespace VetClinic.ViewModels
                 _repository.Delete(SelectedVet.Id);
                 LoadData();
                 ClearForm();
+                SuccessMessage = "Veterinarian deleted successfully.";
             }
             catch (Exception ex)
             {
@@ -139,19 +168,32 @@ namespace VetClinic.ViewModels
             Specialization = string.Empty;
             LicenseNumber = string.Empty;
             Phone = string.Empty;
+            SelectedVet = null;
         }
 
-        private bool ValidateVetInput()
+        private void ClearMessages()
         {
-            if (string.IsNullOrWhiteSpace(FirstName))
+            ClearError();
+            SuccessMessage = string.Empty;
+        }
+
+        private bool ValidateVetInput(bool isUpdate)
+        {
+            if (string.IsNullOrWhiteSpace(FirstName) || FirstName.Trim().Length < 2)
             {
-                SetError("First name is required.");
+                SetError("First name is required and must be at least 2 characters.");
                 return false;
             }
 
-            if (string.IsNullOrWhiteSpace(LastName))
+            if (string.IsNullOrWhiteSpace(LastName) || LastName.Trim().Length < 2)
             {
-                SetError("Last name is required.");
+                SetError("Last name is required and must be at least 2 characters.");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(Specialization))
+            {
+                SetError("Specialization is required.");
                 return false;
             }
 
@@ -161,7 +203,75 @@ namespace VetClinic.ViewModels
                 return false;
             }
 
+            if (string.IsNullOrWhiteSpace(Phone))
+            {
+                SetError("Phone is required.");
+                return false;
+            }
+
+            var normalizedPhone = Phone.Trim();
+            var canonicalPhone = NormalizePhoneForComparison(normalizedPhone);
+            var normalizedLicense = LicenseNumber.Trim();
+
+            if (!Regex.IsMatch(normalizedPhone, PhonePattern))
+            {
+                SetError("Phone format is invalid. Use digits with optional leading + (7 to 15 digits).");
+                return false;
+            }
+
+            try
+            {
+                var vets = _repository.GetAll();
+                var excludeId = isUpdate ? SelectedVet?.Id : null;
+
+                var phoneExists = vets.Any(v =>
+                    v.Id != excludeId &&
+                    string.Equals(NormalizePhoneForComparison(v.Phone), canonicalPhone, StringComparison.OrdinalIgnoreCase));
+
+                if (phoneExists)
+                {
+                    SetError("Phone number is already used by another veterinarian.");
+                    return false;
+                }
+
+                var licenseExists = vets.Any(v =>
+                    v.Id != excludeId &&
+                    string.Equals(v.LicenseNumber?.Trim(), normalizedLicense, StringComparison.OrdinalIgnoreCase));
+
+                if (licenseExists)
+                {
+                    SetError("License number is already used by another veterinarian.");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                SetError($"Could not validate veterinarian data: {ex.InnerException?.Message ?? ex.Message}");
+                return false;
+            }
+
             return true;
+        }
+
+        private static string NormalizePhoneForComparison(string? rawPhone)
+        {
+            if (string.IsNullOrWhiteSpace(rawPhone))
+            {
+                return string.Empty;
+            }
+
+            if (rawPhone.Length == 10 && rawPhone.StartsWith("0", StringComparison.Ordinal))
+            {
+                return "359" + rawPhone[1..];
+            }
+
+            return rawPhone;
+        }
+
+        private static string NormalizePhoneForStorage(string? rawPhone)
+        {
+            var canonicalDigits = NormalizePhoneForComparison(rawPhone);
+            return string.IsNullOrEmpty(canonicalDigits) ? string.Empty : "+" + canonicalDigits;
         }
     }
 }

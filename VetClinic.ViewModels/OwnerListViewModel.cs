@@ -267,22 +267,12 @@ namespace VetClinic.ViewModels
                 return string.Empty;
             }
 
-            // Keep digits only so +359 888-111-222 and +359888111222 compare equally.
-            var digitsOnly = new string(rawPhone.Where(char.IsDigit).ToArray());
-
-            // Treat local Bulgarian 0XXXXXXXXX as international 359XXXXXXXXX.
-            if (digitsOnly.Length == 10 && digitsOnly.StartsWith("0", StringComparison.Ordinal))
+            if (rawPhone.Length == 10 && rawPhone.StartsWith("0", StringComparison.Ordinal))
             {
-                return "359" + digitsOnly[1..];
+                return "359" + rawPhone[1..];
             }
 
-            // Treat 00359XXXXXXXXX and 359XXXXXXXXX as the same canonical value.
-            if (digitsOnly.StartsWith("00359", StringComparison.Ordinal))
-            {
-                return digitsOnly[2..];
-            }
-
-            return digitsOnly;
+            return rawPhone;
         }
 
         private static string NormalizePhoneForStorage(string? rawPhone)

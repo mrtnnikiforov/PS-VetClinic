@@ -8,6 +8,7 @@
         <DataGrid x:Name="ListDataGrid"
                   SelectedItem="{Binding SelectedItem}"
                   AutoGenerateColumns="False"
+                  ColumnWidth="*"
                   IsReadOnly="True"
                   MaxHeight="500"
                   SelectionMode="Single"

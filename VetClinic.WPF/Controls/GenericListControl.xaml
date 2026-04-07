@@ -9,6 +9,7 @@
                   ItemsSource="{Binding Items}"
                   SelectedItem="{Binding SelectedItem}"
                   AutoGenerateColumns="False"
+                  ColumnWidth="*"
                   IsReadOnly="True"
                   CanUserAddRows="False"
                   MaxHeight="500"
