@@ -96,7 +96,7 @@ namespace VetClinic.ViewModels
         private void AddDog()
         {
             ClearMessages();
-            if (!ValidateDogInput()) return;
+            if (!ValidateDogInput(isUpdate: false)) return;
 
             var dog = new Dog
             {
@@ -125,7 +125,7 @@ namespace VetClinic.ViewModels
         {
             ClearMessages();
             if (SelectedDog == null) return;
-            if (!ValidateDogInput()) return;
+            if (!ValidateDogInput(isUpdate: true)) return;
 
             SelectedDog.Name = Name;
             SelectedDog.Breed = Breed;
@@ -138,6 +138,7 @@ namespace VetClinic.ViewModels
             {
                 _repository.Update(SelectedDog);
                 LoadData();
+                SuccessMessage = "Dog updated successfully.";
             }
             catch (Exception ex)
             {
@@ -155,6 +156,7 @@ namespace VetClinic.ViewModels
                 _repository.Delete(SelectedDog.Id);
                 LoadData();
                 ClearForm();
+                SuccessMessage = "Dog deleted successfully.";
             }
             catch (Exception ex)
             {
@@ -170,6 +172,7 @@ namespace VetClinic.ViewModels
             WeightKg = 0;
             ChipNumber = string.Empty;
             OwnerId = 0;
+            SelectedDog = null;
         }
 
         private void ClearMessages()
@@ -178,7 +181,7 @@ namespace VetClinic.ViewModels
             SuccessMessage = string.Empty;
         }
 
-        private bool ValidateDogInput()
+        private bool ValidateDogInput(bool isUpdate)
         {
             if (string.IsNullOrWhiteSpace(Name) || Name.Trim().Length <= 2)
             {
@@ -211,7 +214,7 @@ namespace VetClinic.ViewModels
             }
 
             var normalizedChip = ChipNumber.Trim();
-            if (!TryValidateUniqueChipNumber(normalizedChip))
+            if (!TryValidateUniqueChipNumber(normalizedChip, isUpdate))
             {
                 return false;
             }
@@ -243,13 +246,14 @@ namespace VetClinic.ViewModels
             return true;
         }
 
-        private bool TryValidateUniqueChipNumber(string normalizedChip)
+        private bool TryValidateUniqueChipNumber(string normalizedChip, bool isUpdate)
         {
             try
             {
                 var dogs = _repository.GetAll();
+                var excludeDogId = isUpdate ? SelectedDog?.Id : null;
                 var hasDuplicate = dogs.Any(d =>
-                    d.Id != SelectedDog?.Id &&
+                    d.Id != excludeDogId &&
                     string.Equals(d.ChipNumber?.Trim(), normalizedChip, StringComparison.OrdinalIgnoreCase));
 
                 if (hasDuplicate)
