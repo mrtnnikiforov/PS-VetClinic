@@ -5,21 +5,50 @@
 
     <UserControl.Resources>
         <converters:EnumValuesConverter x:Key="EnumValuesConverter"/>
+        <converters:DateTimeToDateTimeOffsetConverter x:Key="DateTimeToDateTimeOffset"/>
+
+        <DataTemplate x:Key="StringTemplate">
+            <StackPanel Orientation="Horizontal" Margin="0,4">
+                <TextBlock Text="{Binding DisplayLabel}" Width="150" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                <TextBox Text="{Binding Value, Mode=TwoWay}" Width="200"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="NumericTemplate">
+            <StackPanel Orientation="Horizontal" Margin="0,4">
+                <TextBlock Text="{Binding DisplayLabel}" Width="150" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                <TextBox Text="{Binding Value, Mode=TwoWay}" Width="200"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="DateTemplate">
+            <StackPanel Orientation="Horizontal" Margin="0,4">
+                <TextBlock Text="{Binding DisplayLabel}" Width="150" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                <DatePicker SelectedDate="{Binding Value, Converter={StaticResource DateTimeToDateTimeOffset}, Mode=TwoWay}" Width="200"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="EnumTemplate">
+            <StackPanel Orientation="Horizontal" Margin="0,4">
+                <TextBlock Text="{Binding DisplayLabel}" Width="150" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                <ComboBox ItemsSource="{Binding PropertyType, Converter={StaticResource EnumValuesConverter}}"
+                          SelectedItem="{Binding Value, Mode=TwoWay}"
+                          Width="200"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <converters:FilterFieldTemplateSelector x:Key="FieldTemplateSelector"
+                                                StringTemplate="{StaticResource StringTemplate}"
+                                                NumericTemplate="{StaticResource NumericTemplate}"
+                                                DateTemplate="{StaticResource DateTemplate}"
+                                                EnumTemplate="{StaticResource EnumTemplate}"/>
     </UserControl.Resources>
 
     <StackPanel Margin="10">
         <TextBlock Text="Search Filters" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
 
-        <ItemsControl ItemsSource="{Binding FilterFields}">
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel Orientation="Horizontal" Margin="0,4">
-                        <TextBlock Text="{Binding DisplayLabel}" Width="150" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                        <TextBox Text="{Binding Value}" Width="200"/>
-                    </StackPanel>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
+        <ItemsControl ItemsSource="{Binding FilterFields}"
+                      ItemTemplate="{StaticResource FieldTemplateSelector}"/>
 
         <StackPanel Orientation="Horizontal" Margin="0,10">
             <Button Content="Search" Command="{Binding SearchCommand}" Padding="20,5" Margin="0,0,10,0"/>

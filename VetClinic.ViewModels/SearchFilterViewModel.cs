@@ -82,10 +82,25 @@ namespace VetClinic.ViewModels
                 }
                 else if (field.PropertyType == typeof(DateTime))
                 {
-                    if (DateTime.TryParse(valueStr, out var dateValue))
+                    DateTime? dateValue = null;
+
+                    if (field.Value is DateTime dt)
+                    {
+                        dateValue = dt;
+                    }
+                    else if (field.Value is DateTimeOffset dto)
+                    {
+                        dateValue = dto.DateTime;
+                    }
+                    else if (DateTime.TryParse(valueStr, out var parsedDate))
+                    {
+                        dateValue = parsedDate;
+                    }
+
+                    if (dateValue.HasValue)
                     {
                         var dateProperty = Expression.Property(property, "Date");
-                        var constant = Expression.Constant(dateValue.Date);
+                        var constant = Expression.Constant(dateValue.Value.Date);
                         condition = Expression.GreaterThanOrEqual(dateProperty, constant);
                     }
                 }
@@ -101,7 +116,12 @@ namespace VetClinic.ViewModels
                 }
                 else if (field.PropertyType.IsEnum)
                 {
-                    if (Enum.TryParse(field.PropertyType, valueStr, true, out var enumValue))
+                    if (field.Value != null && field.Value.GetType() == field.PropertyType)
+                    {
+                        var constant = Expression.Constant(field.Value);
+                        condition = Expression.Equal(property, constant);
+                    }
+                    else if (Enum.TryParse(field.PropertyType, valueStr, true, out var enumValue))
                     {
                         var constant = Expression.Constant(enumValue);
                         condition = Expression.Equal(property, constant);
@@ -124,8 +144,6 @@ namespace VetClinic.ViewModels
             }
             else
             {
-                var lambdaType = typeof(Expression<>).MakeGenericType(
-                    typeof(Func<,>).MakeGenericType(_entityType, typeof(bool)));
 
                 var lambda = Expression.Lambda(combinedFilter, parameter);
                 var results = (System.Collections.IList)_queryMethod.Invoke(_repository, new object[] { lambda })!;
