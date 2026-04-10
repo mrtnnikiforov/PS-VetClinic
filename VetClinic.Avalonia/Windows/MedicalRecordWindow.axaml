@@ -1,15 +1,19 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:VetClinic.Avalonia.Controls"
+        xmlns:converters="clr-namespace:VetClinic.Avalonia.Converters"
         x:Class="VetClinic.Avalonia.Windows.MedicalRecordWindow"
         Title="Medical Records" Height="600" Width="800">
+    <Window.Resources>
+        <converters:DateTimeToDateTimeOffsetConverter x:Key="DateTimeToDateTimeOffset"/>
+    </Window.Resources>
     <Grid ColumnDefinitions="*,280">
         <controls:GenericListControl Grid.Column="0" DataContext="{Binding ListVm}"/>
 
         <StackPanel Grid.Column="1" Margin="10">
             <TextBlock Text="Medical Record Form" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
             <TextBlock Text="Date"/>
-            <DatePicker SelectedDate="{Binding CrudVm.Date}" Margin="0,0,0,5"/>
+            <DatePicker SelectedDate="{Binding CrudVm.Date, Converter={StaticResource DateTimeToDateTimeOffset}}" Margin="0,0,0,5"/>
             <TextBlock Text="Diagnosis"/>
             <TextBox Text="{Binding CrudVm.Diagnosis}" Margin="0,0,0,5"/>
             <TextBlock Text="Treatment"/>
@@ -19,10 +23,15 @@
             <TextBlock Text="Cost"/>
             <TextBox Text="{Binding CrudVm.Cost}" Margin="0,0,0,5"/>
             <TextBlock Text="Appointment ID"/>
-            <TextBox Text="{Binding CrudVm.AppointmentId}" Margin="0,0,0,10"/>
+            <TextBox Text="{Binding CrudVm.AppointmentId}" Margin="0,0,0,4"/>
+            <TextBlock Text="{Binding CrudVm.UsableAppointmentIdsText}" Foreground="Gray" Margin="0,0,0,10" TextWrapping="Wrap"/>
             <Button Content="Add" Command="{Binding CrudVm.AddCommand}" Padding="5" Margin="0,0,0,5" HorizontalAlignment="Stretch"/>
             <Button Content="Update" Command="{Binding CrudVm.UpdateCommand}" Padding="5" Margin="0,0,0,5" HorizontalAlignment="Stretch"/>
             <Button Content="Delete" Command="{Binding CrudVm.DeleteCommand}" Padding="5" HorizontalAlignment="Stretch"/>
+            <TextBlock Text="{Binding CrudVm.SuccessMessage}" Foreground="SeaGreen" TextWrapping="Wrap" Margin="0,10,0,0"
+                       IsVisible="{Binding CrudVm.HasSuccessMessage}"/>
+            <TextBlock Text="{Binding CrudVm.ErrorMessage}" Foreground="IndianRed" TextWrapping="Wrap" Margin="0,4,0,0"
+                       IsVisible="{Binding CrudVm.HasErrorMessage}"/>
         </StackPanel>
     </Grid>
 </Window>

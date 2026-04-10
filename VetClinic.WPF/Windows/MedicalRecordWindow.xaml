@@ -3,6 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:VetClinic.WPF.Controls"
         Title="Medical Records" Height="600" Width="800">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    </Window.Resources>
+
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -24,10 +28,15 @@
             <TextBlock Text="Cost"/>
             <TextBox Text="{Binding CrudVm.Cost, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
             <TextBlock Text="Appointment ID"/>
-            <TextBox Text="{Binding CrudVm.AppointmentId, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
+            <TextBox Text="{Binding CrudVm.AppointmentId, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"/>
+            <TextBlock Text="{Binding CrudVm.UsableAppointmentIdsText}" Foreground="Gray" Margin="0,0,0,10" TextWrapping="Wrap"/>
             <Button Content="Add" Command="{Binding CrudVm.AddCommand}" Padding="5" Margin="0,0,0,5"/>
             <Button Content="Update" Command="{Binding CrudVm.UpdateCommand}" Padding="5" Margin="0,0,0,5"/>
             <Button Content="Delete" Command="{Binding CrudVm.DeleteCommand}" Padding="5"/>
+            <TextBlock Text="{Binding CrudVm.SuccessMessage}" Foreground="SeaGreen" TextWrapping="Wrap" Margin="0,10,0,0"
+                       Visibility="{Binding CrudVm.HasSuccessMessage, Converter={StaticResource BoolToVisibilityConverter}}"/>
+            <TextBlock Text="{Binding CrudVm.ErrorMessage}" Foreground="IndianRed" TextWrapping="Wrap" Margin="0,4,0,0"
+                       Visibility="{Binding CrudVm.HasErrorMessage, Converter={StaticResource BoolToVisibilityConverter}}"/>
         </StackPanel>
     </Grid>
 </Window>

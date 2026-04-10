@@ -6,15 +6,13 @@
         <TextBlock Text="List View" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
 
         <DataGrid x:Name="ListDataGrid"
-                  ItemsSource="{Binding Items}"
                   SelectedItem="{Binding SelectedItem}"
+                  AutoGenerateColumns="False"
+                  ColumnWidth="*"
                   IsReadOnly="True"
                   MaxHeight="500"
                   SelectionMode="Single"
                   CanUserResizeColumns="True"/>
 
-        <StackPanel Orientation="Horizontal" Margin="0,10">
-            <Button Content="Clear" Command="{Binding ClearCommand}" Padding="20,5"/>
-        </StackPanel>
     </StackPanel>
 </UserControl>

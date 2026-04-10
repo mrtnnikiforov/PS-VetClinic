@@ -9,6 +9,7 @@ namespace VetClinic.ViewModels
     public class MedicalRecordViewModel : ViewModelBase
     {
         private readonly IRepository<MedicalRecord> _repository;
+        private readonly IRepository<Appointment> _appointmentRepository;
 
         private ObservableCollection<MedicalRecord> _records = new();
         public ObservableCollection<MedicalRecord> Records
@@ -21,7 +22,15 @@ namespace VetClinic.ViewModels
         public MedicalRecord? SelectedRecord
         {
             get => _selectedRecord;
-            set => SetProperty(ref _selectedRecord, value);
+            set
+            {
+                if (SetProperty(ref _selectedRecord, value))
+                {
+                    (UpdateCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                    (DeleteCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                    RefreshUsableAppointmentIds();
+                }
+            }
         }
 
         private DateTime _date = DateTime.Today;
@@ -42,14 +51,47 @@ namespace VetClinic.ViewModels
         private int _appointmentId;
         public int AppointmentId { get => _appointmentId; set => SetProperty(ref _appointmentId, value); }
 
+        private ObservableCollection<int> _usableAppointmentIds = new();
+        public ObservableCollection<int> UsableAppointmentIds
+        {
+            get => _usableAppointmentIds;
+            private set
+            {
+                if (SetProperty(ref _usableAppointmentIds, value))
+                {
+                    OnPropertyChanged(nameof(UsableAppointmentIdsText));
+                }
+            }
+        }
+
+        public string UsableAppointmentIdsText => UsableAppointmentIds.Count == 0
+            ? "Usable IDs: none"
+            : $"Usable IDs: {string.Join(", ", UsableAppointmentIds)}";
+
+        private string _successMessage = string.Empty;
+        public string SuccessMessage
+        {
+            get => _successMessage;
+            set
+            {
+                if (SetProperty(ref _successMessage, value))
+                {
+                    OnPropertyChanged(nameof(HasSuccessMessage));
+                }
+            }
+        }
+
+        public bool HasSuccessMessage => !string.IsNullOrWhiteSpace(SuccessMessage);
+
         public ICommand LoadCommand { get; }
         public ICommand AddCommand { get; }
         public ICommand UpdateCommand { get; }
         public ICommand DeleteCommand { get; }
 
-        public MedicalRecordViewModel(IRepository<MedicalRecord> repository)
+        public MedicalRecordViewModel(IRepository<MedicalRecord> repository, IRepository<Appointment> appointmentRepository)
         {
             _repository = repository;
+            _appointmentRepository = appointmentRepository;
             LoadCommand = new RelayCommand(_ => LoadData());
             AddCommand = new RelayCommand(_ => AddRecord());
             UpdateCommand = new RelayCommand(_ => UpdateRecord(), _ => SelectedRecord != null);
@@ -59,11 +101,22 @@ namespace VetClinic.ViewModels
 
         public void LoadData()
         {
-            Records = new ObservableCollection<MedicalRecord>(_repository.GetAll());
+            try
+            {
+                Records = new ObservableCollection<MedicalRecord>(_repository.GetAll());
+                RefreshUsableAppointmentIds();
+            }
+            catch (Exception ex)
+            {
+                SetError($"Could not load medical records: {ex.InnerException?.Message ?? ex.Message}");
+            }
         }
 
         private void AddRecord()
         {
+            ClearMessages();
+            if (!ValidateRecordInput()) return;
+
             var record = new MedicalRecord
             {
                 Date = Date,
@@ -73,29 +126,61 @@ namespace VetClinic.ViewModels
                 Cost = Cost,
                 AppointmentId = AppointmentId
             };
-            _repository.Add(record);
-            LoadData();
-            ClearForm();
+
+            try
+            {
+                _repository.Add(record);
+                LoadData();
+                ClearForm();
+                SuccessMessage = "Medical record added successfully.";
+            }
+            catch (Exception ex)
+            {
+                SetError(ToUserMessage(ex, "Could not add medical record"));
+            }
         }
 
         private void UpdateRecord()
         {
+            ClearMessages();
             if (SelectedRecord == null) return;
+            if (!ValidateRecordInput()) return;
+
             SelectedRecord.Date = Date;
             SelectedRecord.Diagnosis = Diagnosis;
             SelectedRecord.Treatment = Treatment;
             SelectedRecord.Medications = Medications;
             SelectedRecord.Cost = Cost;
-            _repository.Update(SelectedRecord);
-            LoadData();
+            SelectedRecord.AppointmentId = AppointmentId;
+
+            try
+            {
+                _repository.Update(SelectedRecord);
+                LoadData();
+                SuccessMessage = "Medical record updated successfully.";
+            }
+            catch (Exception ex)
+            {
+                SetError(ToUserMessage(ex, "Could not update medical record"));
+            }
         }
 
         private void DeleteRecord()
         {
+            ClearMessages();
             if (SelectedRecord == null) return;
-            _repository.Delete(SelectedRecord.Id);
-            LoadData();
-            ClearForm();
+
+            try
+            {
+                _repository.Delete(SelectedRecord.Id);
+                LoadData();
+                ClearForm();
+                SuccessMessage = "Medical record deleted successfully.";
+            }
+            catch (Exception ex)
+            {
+                SetError(ToUserMessage(ex, "Could not delete medical record"));
+            }
         }
 
         private void ClearForm()
@@ -106,6 +191,93 @@ namespace VetClinic.ViewModels
             Medications = string.Empty;
             Cost = 0;
             AppointmentId = 0;
+            SelectedRecord = null;
+        }
+
+        private void ClearMessages()
+        {
+            ClearError();
+            SuccessMessage = string.Empty;
+        }
+
+        private bool ValidateRecordInput()
+        {
+            if (Date == default)
+            {
+                SetError("Date is required.");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(Diagnosis))
+            {
+                SetError("Diagnosis is required.");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(Treatment))
+            {
+                SetError("Treatment is required.");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(Medications))
+            {
+                SetError("Medications are required.");
+                return false;
+            }
+
+            if (AppointmentId <= 0)
+            {
+                SetError("Appointment ID must be a positive number.");
+                return false;
+            }
+
+            if (!UsableAppointmentIds.Contains(AppointmentId))
+            {
+                SetError($"Invalid Appointment ID. {UsableAppointmentIdsText}.");
+                return false;
+            }
+
+            if (Cost < 0)
+            {
+                SetError("Cost cannot be negative.");
+                return false;
+            }
+
+            return true;
+        }
+
+        private void RefreshUsableAppointmentIds()
+        {
+            try
+            {
+                var appointmentIds = _appointmentRepository.GetAll().Select(a => a.Id).OrderBy(id => id).ToList();
+                var usedIds = _repository.GetAll().Select(r => r.AppointmentId).ToHashSet();
+
+                if (SelectedRecord != null)
+                {
+                    usedIds.Remove(SelectedRecord.AppointmentId);
+                }
+
+                var usableIds = appointmentIds.Where(id => !usedIds.Contains(id));
+                UsableAppointmentIds = new ObservableCollection<int>(usableIds);
+            }
+            catch (Exception ex)
+            {
+                SetError($"Could not load usable appointment IDs: {ex.InnerException?.Message ?? ex.Message}");
+                UsableAppointmentIds = new ObservableCollection<int>();
+            }
+        }
+
+        private static string ToUserMessage(Exception ex, string fallback)
+        {
+            var message = ex.InnerException?.Message ?? ex.Message;
+            if (message.Contains("FOREIGN KEY", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Invalid Appointment ID. Please select an existing appointment.";
+            }
+
+            return $"{fallback}: {message}";
         }
     }
 }

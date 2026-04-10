@@ -24,14 +24,12 @@
 
             <!-- Navigation Menu -->
             <StackPanel Grid.Column="0" Background="#EDF2F7">
-                <TextBlock Text="Person 1" FontWeight="Bold" Margin="10,15,10,5" FontSize="12" Foreground="Gray"/>
+                <TextBlock Text="Menu" FontWeight="Bold" Margin="10,15,10,5" FontSize="12" Foreground="Gray"/>
                 <Button Content="Dogs" Click="OpenDogList_Click" Margin="5,2" Padding="5" HorizontalAlignment="Stretch"/>
                 <Button Content="Owners" Click="OpenOwnerList_Click" Margin="5,2" Padding="5" HorizontalAlignment="Stretch"/>
                 <Button Content="Veterinarians" Click="OpenVetList_Click" Margin="5,2" Padding="5" HorizontalAlignment="Stretch"/>
                 <Button Content="Search Dogs" Click="OpenDogSearch_Click" Margin="5,2" Padding="5" HorizontalAlignment="Stretch"/>
                 <Button Content="Search Owners" Click="OpenOwnerSearch_Click" Margin="5,2" Padding="5" HorizontalAlignment="Stretch"/>
-
-                <TextBlock Text="Person 2" FontWeight="Bold" Margin="10,20,10,5" FontSize="12" Foreground="Gray"/>
                 <Button Content="Appointments" Click="OpenAppointmentList_Click" Margin="5,2" Padding="5" HorizontalAlignment="Stretch"/>
                 <Button Content="Schedule Appointment" Click="OpenAppointmentScheduler_Click" Margin="5,2" Padding="5" HorizontalAlignment="Stretch"/>
                 <Button Content="Medical Records" Click="OpenMedicalRecord_Click" Margin="5,2" Padding="5" HorizontalAlignment="Stretch"/>

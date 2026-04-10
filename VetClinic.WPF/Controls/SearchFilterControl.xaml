@@ -5,6 +5,7 @@
 
     <UserControl.Resources>
         <converters:EnumValuesConverter x:Key="EnumValuesConverter"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
 
         <DataTemplate x:Key="StringTemplate">
             <StackPanel Orientation="Horizontal" Margin="0,4">
@@ -55,6 +56,10 @@
         </StackPanel>
 
         <TextBlock Text="Results" FontSize="16" FontWeight="Bold" Margin="0,15,0,5"/>
+        <TextBlock Text="{Binding NotFoundMessage}"
+                  Foreground="IndianRed"
+                  Margin="0,0,0,6"
+                  Visibility="{Binding HasNotFoundMessage, Converter={StaticResource BoolToVisibilityConverter}}"/>
         <DataGrid ItemsSource="{Binding Results}"
                   AutoGenerateColumns="True"
                   IsReadOnly="True"
