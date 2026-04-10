@@ -189,6 +189,12 @@ namespace VetClinic.ViewModels
                 return false;
             }
 
+            if (!IsLettersOnly(Name))
+            {
+                SetError("Name must contain letters only.");
+                return false;
+            }
+
             if (string.IsNullOrWhiteSpace(Breed) || Breed.Trim().Length <= 2)
             {
                 SetError("Breed is required and must be longer than 2 characters.");
@@ -244,6 +250,12 @@ namespace VetClinic.ViewModels
             }
 
             return true;
+        }
+
+        private static bool IsLettersOnly(string value)
+        {
+            var trimmed = value.Trim();
+            return trimmed.All(char.IsLetter);
         }
 
         private bool TryValidateUniqueChipNumber(string normalizedChip, bool isUpdate)

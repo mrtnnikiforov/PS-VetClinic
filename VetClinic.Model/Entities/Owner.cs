@@ -8,6 +8,7 @@ namespace VetClinic.Model.Entities
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Displayable("ID", 0)]
         public int Id { get; set; }
 
         [Searchable("First Name")]

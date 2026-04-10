@@ -186,9 +186,21 @@ namespace VetClinic.ViewModels
                 return false;
             }
 
+            if (!IsLettersOnly(FirstName))
+            {
+                SetError("First name must contain letters only.");
+                return false;
+            }
+
             if (string.IsNullOrWhiteSpace(LastName) || LastName.Trim().Length < 2)
             {
                 SetError("Last name is required and must be at least 2 characters.");
+                return false;
+            }
+
+            if (!IsLettersOnly(LastName))
+            {
+                SetError("Last name must contain letters only.");
                 return false;
             }
 
@@ -258,6 +270,12 @@ namespace VetClinic.ViewModels
             }
 
             return true;
+        }
+
+        private static bool IsLettersOnly(string value)
+        {
+            var trimmed = value.Trim();
+            return trimmed.All(char.IsLetter);
         }
 
         private static string NormalizePhoneForComparison(string? rawPhone)
