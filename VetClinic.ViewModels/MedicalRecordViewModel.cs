@@ -9,6 +9,7 @@ namespace VetClinic.ViewModels
     public class MedicalRecordViewModel : ViewModelBase
     {
         private readonly IRepository<MedicalRecord> _repository;
+        private readonly IRepository<Appointment> _appointmentRepository;
 
         private ObservableCollection<MedicalRecord> _records = new();
         public ObservableCollection<MedicalRecord> Records
@@ -27,6 +28,7 @@ namespace VetClinic.ViewModels
                 {
                     (UpdateCommand as RelayCommand)?.RaiseCanExecuteChanged();
                     (DeleteCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                    RefreshUsableAppointmentIds();
                 }
             }
         }
@@ -49,14 +51,47 @@ namespace VetClinic.ViewModels
         private int _appointmentId;
         public int AppointmentId { get => _appointmentId; set => SetProperty(ref _appointmentId, value); }
 
+        private ObservableCollection<int> _usableAppointmentIds = new();
+        public ObservableCollection<int> UsableAppointmentIds
+        {
+            get => _usableAppointmentIds;
+            private set
+            {
+                if (SetProperty(ref _usableAppointmentIds, value))
+                {
+                    OnPropertyChanged(nameof(UsableAppointmentIdsText));
+                }
+            }
+        }
+
+        public string UsableAppointmentIdsText => UsableAppointmentIds.Count == 0
+            ? "Usable IDs: none"
+            : $"Usable IDs: {string.Join(", ", UsableAppointmentIds)}";
+
+        private string _successMessage = string.Empty;
+        public string SuccessMessage
+        {
+            get => _successMessage;
+            set
+            {
+                if (SetProperty(ref _successMessage, value))
+                {
+                    OnPropertyChanged(nameof(HasSuccessMessage));
+                }
+            }
+        }
+
+        public bool HasSuccessMessage => !string.IsNullOrWhiteSpace(SuccessMessage);
+
         public ICommand LoadCommand { get; }
         public ICommand AddCommand { get; }
         public ICommand UpdateCommand { get; }
         public ICommand DeleteCommand { get; }
 
-        public MedicalRecordViewModel(IRepository<MedicalRecord> repository)
+        public MedicalRecordViewModel(IRepository<MedicalRecord> repository, IRepository<Appointment> appointmentRepository)
         {
             _repository = repository;
+            _appointmentRepository = appointmentRepository;
             LoadCommand = new RelayCommand(_ => LoadData());
             AddCommand = new RelayCommand(_ => AddRecord());
             UpdateCommand = new RelayCommand(_ => UpdateRecord(), _ => SelectedRecord != null);
@@ -66,12 +101,20 @@ namespace VetClinic.ViewModels
 
         public void LoadData()
         {
-            Records = new ObservableCollection<MedicalRecord>(_repository.GetAll());
+            try
+            {
+                Records = new ObservableCollection<MedicalRecord>(_repository.GetAll());
+                RefreshUsableAppointmentIds();
+            }
+            catch (Exception ex)
+            {
+                SetError($"Could not load medical records: {ex.InnerException?.Message ?? ex.Message}");
+            }
         }
 
         private void AddRecord()
         {
-            ClearError();
+            ClearMessages();
             if (!ValidateRecordInput()) return;
 
             var record = new MedicalRecord
@@ -89,6 +132,7 @@ namespace VetClinic.ViewModels
                 _repository.Add(record);
                 LoadData();
                 ClearForm();
+                SuccessMessage = "Medical record added successfully.";
             }
             catch (Exception ex)
             {
@@ -98,7 +142,7 @@ namespace VetClinic.ViewModels
 
         private void UpdateRecord()
         {
-            ClearError();
+            ClearMessages();
             if (SelectedRecord == null) return;
             if (!ValidateRecordInput()) return;
 
@@ -113,6 +157,7 @@ namespace VetClinic.ViewModels
             {
                 _repository.Update(SelectedRecord);
                 LoadData();
+                SuccessMessage = "Medical record updated successfully.";
             }
             catch (Exception ex)
             {
@@ -122,7 +167,7 @@ namespace VetClinic.ViewModels
 
         private void DeleteRecord()
         {
-            ClearError();
+            ClearMessages();
             if (SelectedRecord == null) return;
 
             try
@@ -130,6 +175,7 @@ namespace VetClinic.ViewModels
                 _repository.Delete(SelectedRecord.Id);
                 LoadData();
                 ClearForm();
+                SuccessMessage = "Medical record deleted successfully.";
             }
             catch (Exception ex)
             {
@@ -145,19 +191,50 @@ namespace VetClinic.ViewModels
             Medications = string.Empty;
             Cost = 0;
             AppointmentId = 0;
+            SelectedRecord = null;
+        }
+
+        private void ClearMessages()
+        {
+            ClearError();
+            SuccessMessage = string.Empty;
         }
 
         private bool ValidateRecordInput()
         {
+            if (Date == default)
+            {
+                SetError("Date is required.");
+                return false;
+            }
+
             if (string.IsNullOrWhiteSpace(Diagnosis))
             {
                 SetError("Diagnosis is required.");
                 return false;
             }
 
+            if (string.IsNullOrWhiteSpace(Treatment))
+            {
+                SetError("Treatment is required.");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(Medications))
+            {
+                SetError("Medications are required.");
+                return false;
+            }
+
             if (AppointmentId <= 0)
             {
                 SetError("Appointment ID must be a positive number.");
+                return false;
+            }
+
+            if (!UsableAppointmentIds.Contains(AppointmentId))
+            {
+                SetError($"Invalid Appointment ID. {UsableAppointmentIdsText}.");
                 return false;
             }
 
@@ -168,6 +245,28 @@ namespace VetClinic.ViewModels
             }
 
             return true;
+        }
+
+        private void RefreshUsableAppointmentIds()
+        {
+            try
+            {
+                var appointmentIds = _appointmentRepository.GetAll().Select(a => a.Id).OrderBy(id => id).ToList();
+                var usedIds = _repository.GetAll().Select(r => r.AppointmentId).ToHashSet();
+
+                if (SelectedRecord != null)
+                {
+                    usedIds.Remove(SelectedRecord.AppointmentId);
+                }
+
+                var usableIds = appointmentIds.Where(id => !usedIds.Contains(id));
+                UsableAppointmentIds = new ObservableCollection<int>(usableIds);
+            }
+            catch (Exception ex)
+            {
+                SetError($"Could not load usable appointment IDs: {ex.InnerException?.Message ?? ex.Message}");
+                UsableAppointmentIds = new ObservableCollection<int>();
+            }
         }
 
         private static string ToUserMessage(Exception ex, string fallback)
