@@ -22,6 +22,21 @@ namespace VetClinic.ViewModels
             set => SetProperty(ref _results, value);
         }
 
+        private string _notFoundMessage = string.Empty;
+        public string NotFoundMessage
+        {
+            get => _notFoundMessage;
+            set
+            {
+                if (SetProperty(ref _notFoundMessage, value))
+                {
+                    OnPropertyChanged(nameof(HasNotFoundMessage));
+                }
+            }
+        }
+
+        public bool HasNotFoundMessage => !string.IsNullOrWhiteSpace(NotFoundMessage);
+
         public ICommand SearchCommand { get; }
         public ICommand ClearCommand { get; }
 
@@ -42,6 +57,8 @@ namespace VetClinic.ViewModels
 
         private void ExecuteSearch()
         {
+            NotFoundMessage = string.Empty;
+
             var parameter = Expression.Parameter(_entityType, "e");
             Expression? combinedFilter = null;
 
@@ -114,6 +131,11 @@ namespace VetClinic.ViewModels
                 var results = (System.Collections.IList)_queryMethod.Invoke(_repository, new object[] { lambda })!;
                 Results = new ObservableCollection<object>(results.Cast<object>());
             }
+
+            if (Results.Count == 0)
+            {
+                NotFoundMessage = "No results!";
+            }
         }
 
         private void ClearFilters()
@@ -123,6 +145,7 @@ namespace VetClinic.ViewModels
                 field.Value = null;
             }
             Results.Clear();
+            NotFoundMessage = string.Empty;
         }
     }
 }
