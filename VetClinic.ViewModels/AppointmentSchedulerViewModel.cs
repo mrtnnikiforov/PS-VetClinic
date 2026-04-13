@@ -130,12 +130,6 @@ namespace VetClinic.ViewModels
                 return;
             }
 
-            if (Reason.Trim().Length < 10)
-            {
-                StatusMessage = "Reason must be at least 10 characters.";
-                return;
-            }
-
             if (AppointmentDate.Date < DateTime.Today)
             {
                 StatusMessage = "Appointment date cannot be before today.";

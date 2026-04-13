@@ -34,6 +34,10 @@ namespace VetClinic.DataLayer.Contexts
                 .WithOne(a => a.MedicalRecord)
                 .HasForeignKey<MedicalRecord>(m => m.AppointmentId);
 
+            modelBuilder.Entity<Veterinarian>()
+                .HasIndex(v => v.Phone)
+                .IsUnique();
+
             SeedData(modelBuilder);
         }
 

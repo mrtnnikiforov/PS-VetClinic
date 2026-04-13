@@ -278,12 +278,19 @@ namespace VetClinic.ViewModels
                 return string.Empty;
             }
 
-            if (rawPhone.Length == 10 && rawPhone.StartsWith("0", StringComparison.Ordinal))
+            var value = rawPhone.Trim();
+
+            if (value.StartsWith("+", StringComparison.Ordinal))
             {
-                return "359" + rawPhone[1..];
+                value = value[1..];
             }
 
-            return rawPhone;
+            if (value.Length == 10 && value.StartsWith("0", StringComparison.Ordinal))
+            {
+                value = "359" + value[1..];
+            }
+
+            return value;
         }
 
         private static string NormalizePhoneForStorage(string? rawPhone)
