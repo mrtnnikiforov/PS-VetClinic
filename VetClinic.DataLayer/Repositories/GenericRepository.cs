@@ -1,6 +1,5 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
-using VetClinic.DataLayer.Contexts;
 using VetClinic.Model.Interfaces;
 
 namespace VetClinic.DataLayer.Repositories
@@ -14,9 +13,9 @@ namespace VetClinic.DataLayer.Repositories
             _contextFactory = contextFactory;
         }
 
-        private VetClinicContext GetContext()
+        private DbContext GetContext()
         {
-            var context = (VetClinicContext)_contextFactory.CreateContext();
+            var context = _contextFactory.CreateContext();
             context.Database.EnsureCreated();
             return context;
         }

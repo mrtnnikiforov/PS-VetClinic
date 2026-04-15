@@ -61,7 +61,6 @@ AvaloniaUI е cross-platform UI framework за .NET, който използва
 | DataTemplateSelector | Вграден | Няма — използва `IDataTemplate` |
 | DataGrid | Вграден | Отделен NuGet пакет |
 | Grid синтаксис | `<Grid.RowDefinitions>` дъщерни елементи | `RowDefinitions="Auto,*"` атрибут |
-| DependencyObject | Наличен (но го избягваме) | Не съществува |
 | Зрялост | 20+ години, стабилен | По-нов, по-малка общност |
 
 ### 2.4. SQLite
