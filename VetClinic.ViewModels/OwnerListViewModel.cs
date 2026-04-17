@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Text.RegularExpressions;
 using System.Windows.Input;
 using VetClinic.Common;
 using VetClinic.Model.Entities;
@@ -9,6 +10,8 @@ namespace VetClinic.ViewModels
     public class OwnerListViewModel : ViewModelBase
     {
         private readonly IRepository<Owner> _repository;
+        private const string PhonePattern = @"^\+?[0-9]{7,15}$";
+        private const string EmailPattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
 
         private ObservableCollection<Owner> _owners = new();
         public ObservableCollection<Owner> Owners
@@ -21,7 +24,14 @@ namespace VetClinic.ViewModels
         public Owner? SelectedOwner
         {
             get => _selectedOwner;
-            set => SetProperty(ref _selectedOwner, value);
+            set
+            {
+                if (SetProperty(ref _selectedOwner, value))
+                {
+                    (UpdateCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                    (DeleteCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                }
+            }
         }
 
         private string _firstName = string.Empty;
@@ -38,6 +48,21 @@ namespace VetClinic.ViewModels
 
         private string _address = string.Empty;
         public string Address { get => _address; set => SetProperty(ref _address, value); }
+
+        private string _successMessage = string.Empty;
+        public string SuccessMessage
+        {
+            get => _successMessage;
+            set
+            {
+                if (SetProperty(ref _successMessage, value))
+                {
+                    OnPropertyChanged(nameof(HasSuccessMessage));
+                }
+            }
+        }
+
+        public bool HasSuccessMessage => !string.IsNullOrWhiteSpace(SuccessMessage);
 
         public ICommand LoadCommand { get; }
         public ICommand AddCommand { get; }
@@ -56,42 +81,85 @@ namespace VetClinic.ViewModels
 
         public void LoadData()
         {
-            Owners = new ObservableCollection<Owner>(_repository.GetAll());
+            try
+            {
+                Owners = new ObservableCollection<Owner>(_repository.GetAll());
+            }
+            catch (Exception ex)
+            {
+                SetError($"Could not load owners: {ex.InnerException?.Message ?? ex.Message}");
+            }
         }
 
         private void AddOwner()
         {
+            ClearMessages();
+            if (!ValidateOwnerInput(isUpdate: false)) return;
+            var normalizedPhoneForStorage = NormalizePhoneForStorage(Phone);
+
             var owner = new Owner
             {
                 FirstName = FirstName,
                 LastName = LastName,
-                Phone = Phone,
+                Phone = normalizedPhoneForStorage,
                 Email = Email,
                 Address = Address
             };
-            _repository.Add(owner);
-            LoadData();
-            ClearForm();
+
+            try
+            {
+                _repository.Add(owner);
+                LoadData();
+                ClearForm();
+                SuccessMessage = "Owner added successfully.";
+            }
+            catch (Exception ex)
+            {
+                SetError($"Could not add owner: {ex.InnerException?.Message ?? ex.Message}");
+            }
         }
 
         private void UpdateOwner()
         {
+            ClearMessages();
             if (SelectedOwner == null) return;
+            if (!ValidateOwnerInput(isUpdate: true)) return;
+            var normalizedPhoneForStorage = NormalizePhoneForStorage(Phone);
+
             SelectedOwner.FirstName = FirstName;
             SelectedOwner.LastName = LastName;
-            SelectedOwner.Phone = Phone;
+            SelectedOwner.Phone = normalizedPhoneForStorage;
             SelectedOwner.Email = Email;
             SelectedOwner.Address = Address;
-            _repository.Update(SelectedOwner);
-            LoadData();
+
+            try
+            {
+                _repository.Update(SelectedOwner);
+                LoadData();
+                SuccessMessage = "Owner updated successfully.";
+            }
+            catch (Exception ex)
+            {
+                SetError($"Could not update owner: {ex.InnerException?.Message ?? ex.Message}");
+            }
         }
 
         private void DeleteOwner()
         {
+            ClearMessages();
             if (SelectedOwner == null) return;
-            _repository.Delete(SelectedOwner.Id);
-            LoadData();
-            ClearForm();
+
+            try
+            {
+                _repository.Delete(SelectedOwner.Id);
+                LoadData();
+                ClearForm();
+                SuccessMessage = "Owner deleted successfully.";
+            }
+            catch (Exception ex)
+            {
+                SetError($"Could not delete owner: {ex.InnerException?.Message ?? ex.Message}");
+            }
         }
 
         private void ClearForm()
@@ -101,6 +169,134 @@ namespace VetClinic.ViewModels
             Phone = string.Empty;
             Email = string.Empty;
             Address = string.Empty;
+            SelectedOwner = null;
+        }
+
+        private void ClearMessages()
+        {
+            ClearError();
+            SuccessMessage = string.Empty;
+        }
+
+        private bool ValidateOwnerInput(bool isUpdate)
+        {
+            if (string.IsNullOrWhiteSpace(FirstName) || FirstName.Trim().Length < 2)
+            {
+                SetError("First name is required and must be at least 2 characters.");
+                return false;
+            }
+
+            if (!IsLettersOnly(FirstName))
+            {
+                SetError("First name must contain letters only.");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(LastName) || LastName.Trim().Length < 2)
+            {
+                SetError("Last name is required and must be at least 2 characters.");
+                return false;
+            }
+
+            if (!IsLettersOnly(LastName))
+            {
+                SetError("Last name must contain letters only.");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(Phone))
+            {
+                SetError("Phone is required.");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(Email))
+            {
+                SetError("Email is required.");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(Address))
+            {
+                SetError("Address is required.");
+                return false;
+            }
+
+            var normalizedPhone = Phone.Trim();
+            var normalizedEmail = Email.Trim();
+            var canonicalPhone = NormalizePhoneForComparison(normalizedPhone);
+
+            if (!Regex.IsMatch(normalizedPhone, PhonePattern))
+            {
+                SetError("Phone format is invalid. Use digits with optional leading + (7 to 15 digits).");
+                return false;
+            }
+
+            if (!Regex.IsMatch(normalizedEmail, EmailPattern, RegexOptions.IgnoreCase))
+            {
+                SetError("Email format is invalid.");
+                return false;
+            }
+
+            try
+            {
+                var owners = _repository.GetAll();
+                var excludeId = isUpdate ? SelectedOwner?.Id : null;
+
+                var phoneExists = owners.Any(o =>
+                    o.Id != excludeId &&
+                    string.Equals(NormalizePhoneForComparison(o.Phone), canonicalPhone, StringComparison.OrdinalIgnoreCase));
+
+                if (phoneExists)
+                {
+                    SetError("Phone number is already used by another owner.");
+                    return false;
+                }
+
+                var emailExists = owners.Any(o =>
+                    o.Id != excludeId &&
+                    string.Equals(o.Email?.Trim(), normalizedEmail, StringComparison.OrdinalIgnoreCase));
+
+                if (emailExists)
+                {
+                    SetError("Email is already used by another owner.");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                SetError($"Could not validate owner data: {ex.InnerException?.Message ?? ex.Message}");
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool IsLettersOnly(string value)
+        {
+            var trimmed = value.Trim();
+            return trimmed.All(char.IsLetter);
+        }
+
+        private static string NormalizePhoneForComparison(string? rawPhone)
+        {
+            if (string.IsNullOrWhiteSpace(rawPhone))
+            {
+                return string.Empty;
+            }
+
+            if (rawPhone.Length == 10 && rawPhone.StartsWith("0", StringComparison.Ordinal))
+            {
+                return "359" + rawPhone[1..];
+            }
+
+            return rawPhone;
+        }
+
+        private static string NormalizePhoneForStorage(string? rawPhone)
+        {
+            var canonicalDigits = NormalizePhoneForComparison(rawPhone);
+            return string.IsNullOrEmpty(canonicalDigits) ? string.Empty : "+" + canonicalDigits;
         }
     }
 }

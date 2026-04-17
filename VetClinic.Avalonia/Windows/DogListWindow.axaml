@@ -1,8 +1,12 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:VetClinic.Avalonia.Controls"
+        xmlns:converters="clr-namespace:VetClinic.Avalonia.Converters"
         x:Class="VetClinic.Avalonia.Windows.DogListWindow"
         Title="Dogs" Height="600" Width="800">
+    <Window.Resources>
+        <converters:DateTimeToDateTimeOffsetConverter x:Key="DateTimeToDateTimeOffset"/>
+    </Window.Resources>
     <Grid ColumnDefinitions="*,250">
         <controls:GenericListControl Grid.Column="0" DataContext="{Binding ListVm}"/>
 
@@ -13,7 +17,7 @@
             <TextBlock Text="Breed"/>
             <TextBox Text="{Binding CrudVm.Breed}" Margin="0,0,0,5"/>
             <TextBlock Text="Date of Birth"/>
-            <DatePicker SelectedDate="{Binding CrudVm.DateOfBirth}" Margin="0,0,0,5"/>
+            <DatePicker SelectedDate="{Binding CrudVm.DateOfBirth, Converter={StaticResource DateTimeToDateTimeOffset}}" Margin="0,0,0,5"/>
             <TextBlock Text="Weight (kg)"/>
             <TextBox Text="{Binding CrudVm.WeightKg}" Margin="0,0,0,5"/>
             <TextBlock Text="Chip Number"/>
@@ -23,6 +27,10 @@
             <Button Content="Add" Command="{Binding CrudVm.AddCommand}" Padding="5" Margin="0,0,0,5" HorizontalAlignment="Stretch"/>
             <Button Content="Update" Command="{Binding CrudVm.UpdateCommand}" Padding="5" Margin="0,0,0,5" HorizontalAlignment="Stretch"/>
             <Button Content="Delete" Command="{Binding CrudVm.DeleteCommand}" Padding="5" HorizontalAlignment="Stretch"/>
+            <TextBlock Text="{Binding CrudVm.SuccessMessage}" Foreground="SeaGreen" TextWrapping="Wrap" Margin="0,10,0,0"
+                       IsVisible="{Binding CrudVm.HasSuccessMessage}"/>
+            <TextBlock Text="{Binding CrudVm.ErrorMessage}" Foreground="IndianRed" TextWrapping="Wrap" Margin="0,4,0,0"
+                       IsVisible="{Binding CrudVm.HasErrorMessage}"/>
         </StackPanel>
     </Grid>
 </Window>

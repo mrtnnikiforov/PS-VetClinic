@@ -21,6 +21,10 @@
             <Button Content="Add" Command="{Binding CrudVm.AddCommand}" Padding="5" Margin="0,0,0,5" HorizontalAlignment="Stretch"/>
             <Button Content="Update" Command="{Binding CrudVm.UpdateCommand}" Padding="5" Margin="0,0,0,5" HorizontalAlignment="Stretch"/>
             <Button Content="Delete" Command="{Binding CrudVm.DeleteCommand}" Padding="5" HorizontalAlignment="Stretch"/>
+            <TextBlock Text="{Binding CrudVm.SuccessMessage}" Foreground="SeaGreen" TextWrapping="Wrap" Margin="0,10,0,0"
+                       IsVisible="{Binding CrudVm.HasSuccessMessage}"/>
+            <TextBlock Text="{Binding CrudVm.ErrorMessage}" Foreground="IndianRed" TextWrapping="Wrap" Margin="0,4,0,0"
+                       IsVisible="{Binding CrudVm.HasErrorMessage}"/>
         </StackPanel>
     </Grid>
 </Window>

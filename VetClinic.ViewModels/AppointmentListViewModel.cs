@@ -22,7 +22,15 @@ namespace VetClinic.ViewModels
         public Appointment? SelectedAppointment
         {
             get => _selectedAppointment;
-            set => SetProperty(ref _selectedAppointment, value);
+            set
+            {
+                if (SetProperty(ref _selectedAppointment, value))
+                {
+                    (CompleteCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                    (CancelCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                    (DeleteCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                }
+            }
         }
 
         public ICommand LoadCommand { get; }
@@ -47,25 +55,52 @@ namespace VetClinic.ViewModels
 
         private void CompleteAppointment()
         {
+            ClearError();
             if (SelectedAppointment == null) return;
+
             SelectedAppointment.Status = AppointmentStatus.Completed;
-            _repository.Update(SelectedAppointment);
-            LoadData();
+            try
+            {
+                _repository.Update(SelectedAppointment);
+                LoadData();
+            }
+            catch (Exception ex)
+            {
+                SetError($"Could not complete appointment: {ex.InnerException?.Message ?? ex.Message}");
+            }
         }
 
         private void CancelAppointment()
         {
+            ClearError();
             if (SelectedAppointment == null) return;
+
             SelectedAppointment.Status = AppointmentStatus.Cancelled;
-            _repository.Update(SelectedAppointment);
-            LoadData();
+            try
+            {
+                _repository.Update(SelectedAppointment);
+                LoadData();
+            }
+            catch (Exception ex)
+            {
+                SetError($"Could not cancel appointment: {ex.InnerException?.Message ?? ex.Message}");
+            }
         }
 
         private void DeleteAppointment()
         {
+            ClearError();
             if (SelectedAppointment == null) return;
-            _repository.Delete(SelectedAppointment.Id);
-            LoadData();
+
+            try
+            {
+                _repository.Delete(SelectedAppointment.Id);
+                LoadData();
+            }
+            catch (Exception ex)
+            {
+                SetError($"Could not delete appointment: {ex.InnerException?.Message ?? ex.Message}");
+            }
         }
     }
 }

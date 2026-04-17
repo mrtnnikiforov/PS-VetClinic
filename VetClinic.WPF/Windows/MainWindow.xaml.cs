@@ -10,14 +10,15 @@ namespace VetClinic.WPF.Windows
 
         public MainWindow()
         {
-            InitializeComponent();
             _mainVm = new MainViewModel();
+            InitializeComponent();
             DataContext = _mainVm;
         }
 
         private void DbComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (DbComboBox.SelectedItem is ComboBoxItem item)
+            if (DbComboBox?.SelectedItem is ComboBoxItem item &&
+                _mainVm.SwitchDatabaseCommand.CanExecute(item.Content?.ToString()))
             {
                 _mainVm.SwitchDatabaseCommand.Execute(item.Content?.ToString());
             }

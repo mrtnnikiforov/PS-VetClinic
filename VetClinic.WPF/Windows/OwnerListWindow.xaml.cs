@@ -14,6 +14,13 @@ namespace VetClinic.WPF.Windows
             CrudVm = new OwnerListViewModel(mainVm.OwnerRepository);
             ListVm = new GenericListViewModel(typeof(Owner));
             ListVm.SetItems(CrudVm.Owners);
+            CrudVm.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(CrudVm.Owners))
+                {
+                    ListVm.SetItems(CrudVm.Owners);
+                }
+            };
             ListVm.ItemSelected += item =>
             {
                 if (item is Owner owner)

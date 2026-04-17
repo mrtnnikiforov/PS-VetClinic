@@ -11,9 +11,16 @@ namespace VetClinic.WPF.Windows
 
         public MedicalRecordWindow(MainViewModel mainVm)
         {
-            CrudVm = new MedicalRecordViewModel(mainVm.MedicalRecordRepository);
+            CrudVm = new MedicalRecordViewModel(mainVm.MedicalRecordRepository, mainVm.AppointmentRepository);
             ListVm = new GenericListViewModel(typeof(MedicalRecord));
             ListVm.SetItems(CrudVm.Records);
+            CrudVm.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(CrudVm.Records))
+                {
+                    ListVm.SetItems(CrudVm.Records);
+                }
+            };
             ListVm.ItemSelected += item =>
             {
                 if (item is MedicalRecord rec)

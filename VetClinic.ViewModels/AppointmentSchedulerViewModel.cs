@@ -31,25 +31,53 @@ namespace VetClinic.ViewModels
         public Dog? SelectedDog
         {
             get => _selectedDog;
-            set => SetProperty(ref _selectedDog, value);
+            set
+            {
+                if (SetProperty(ref _selectedDog, value))
+                {
+                    (ScheduleCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                }
+            }
         }
 
         private Veterinarian? _selectedVet;
         public Veterinarian? SelectedVet
         {
             get => _selectedVet;
-            set => SetProperty(ref _selectedVet, value);
+            set
+            {
+                if (SetProperty(ref _selectedVet, value))
+                {
+                    (ScheduleCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                }
+            }
         }
 
         private DateTime _appointmentDate = DateTime.Today.AddDays(1);
         public DateTime AppointmentDate
         {
             get => _appointmentDate;
-            set => SetProperty(ref _appointmentDate, value);
+            set
+            {
+                if (SetProperty(ref _appointmentDate, value))
+                {
+                    (ScheduleCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                }
+            }
         }
 
         private string _reason = string.Empty;
-        public string Reason { get => _reason; set => SetProperty(ref _reason, value); }
+        public string Reason
+        {
+            get => _reason;
+            set
+            {
+                if (SetProperty(ref _reason, value))
+                {
+                    (ScheduleCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                }
+            }
+        }
 
         private string _notes = string.Empty;
         public string Notes { get => _notes; set => SetProperty(ref _notes, value); }
@@ -73,7 +101,11 @@ namespace VetClinic.ViewModels
             _vetRepository = vetRepository;
 
             ScheduleCommand = new RelayCommand(_ => ScheduleAppointment(),
-                _ => SelectedDog != null && SelectedVet != null && !string.IsNullOrWhiteSpace(Reason));
+                _ => SelectedDog != null &&
+                     SelectedVet != null &&
+                     !string.IsNullOrWhiteSpace(Reason) &&
+                     Reason.Trim().Length >= 10 &&
+                     AppointmentDate.Date >= DateTime.Today);
 
             LoadData();
         }
@@ -86,7 +118,23 @@ namespace VetClinic.ViewModels
 
         private void ScheduleAppointment()
         {
-            if (SelectedDog == null || SelectedVet == null) return;
+            if (SelectedDog == null || SelectedVet == null)
+            {
+                StatusMessage = "Please select both a dog and a veterinarian.";
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(Reason))
+            {
+                StatusMessage = "Reason is required.";
+                return;
+            }
+
+            if (AppointmentDate.Date < DateTime.Today)
+            {
+                StatusMessage = "Appointment date cannot be before today.";
+                return;
+            }
 
             var appointment = new Appointment
             {
@@ -98,8 +146,16 @@ namespace VetClinic.ViewModels
                 VeterinarianId = SelectedVet.Id
             };
 
-            _appointmentRepository.Add(appointment);
-            StatusMessage = $"Appointment scheduled for {SelectedDog.Name} with {SelectedVet.FirstName} {SelectedVet.LastName} on {AppointmentDate:d}";
+            try
+            {
+                _appointmentRepository.Add(appointment);
+                StatusMessage = $"Appointment scheduled for {SelectedDog.Name} with {SelectedVet.FirstName} {SelectedVet.LastName} on {AppointmentDate:d}";
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Could not schedule appointment: {ex.InnerException?.Message ?? ex.Message}";
+                return;
+            }
 
             Reason = string.Empty;
             Notes = string.Empty;
