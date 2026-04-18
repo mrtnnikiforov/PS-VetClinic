@@ -26,6 +26,12 @@ namespace VetClinic.DataLayer.Repositories
             return context.Set<T>().ToList();
         }
 
+        public List<T> GetAll(params string[] includes)
+        {
+            using var context = GetContext();
+            return ApplyIncludes(context.Set<T>().AsQueryable(), includes).ToList();
+        }
+
         public T? GetById(int id)
         {
             using var context = GetContext();
@@ -61,6 +67,19 @@ namespace VetClinic.DataLayer.Repositories
         {
             using var context = GetContext();
             return context.Set<T>().Where(predicate).ToList();
+        }
+
+        public List<T> Query(Expression<Func<T, bool>> predicate, params string[] includes)
+        {
+            using var context = GetContext();
+            return ApplyIncludes(context.Set<T>().Where(predicate), includes).ToList();
+        }
+
+        private IQueryable<T> ApplyIncludes(IQueryable<T> query, string[] includes)
+        {
+            foreach (var inc in includes)
+                query = query.Include(inc);
+            return query;
         }
     }
 }

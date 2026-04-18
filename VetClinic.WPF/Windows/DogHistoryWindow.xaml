@@ -16,11 +16,11 @@
         </StackPanel>
 
         <GroupBox Grid.Row="1" Header="Appointments" Margin="10,5">
-            <DataGrid ItemsSource="{Binding Appointments}" AutoGenerateColumns="True" IsReadOnly="True" CanUserAddRows="False"/>
+            <DataGrid x:Name="AppointmentsDataGrid" ItemsSource="{Binding Appointments}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"/>
         </GroupBox>
 
         <GroupBox Grid.Row="2" Header="Medical Records" Margin="10,5">
-            <DataGrid ItemsSource="{Binding MedicalRecords}" AutoGenerateColumns="True" IsReadOnly="True" CanUserAddRows="False"/>
+            <DataGrid x:Name="MedicalRecordsDataGrid" ItemsSource="{Binding MedicalRecords}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"/>
         </GroupBox>
     </Grid>
 </Window>

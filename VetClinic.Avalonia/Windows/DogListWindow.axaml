@@ -1,12 +1,8 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:VetClinic.Avalonia.Controls"
-        xmlns:converters="clr-namespace:VetClinic.Avalonia.Converters"
         x:Class="VetClinic.Avalonia.Windows.DogListWindow"
         Title="Dogs" Height="600" Width="800">
-    <Window.Resources>
-        <converters:DateTimeToDateTimeOffsetConverter x:Key="DateTimeToDateTimeOffset"/>
-    </Window.Resources>
     <Grid ColumnDefinitions="*,250">
         <controls:GenericListControl Grid.Column="0" DataContext="{Binding ListVm}"/>
 
@@ -17,7 +13,7 @@
             <TextBlock Text="Breed"/>
             <TextBox Text="{Binding CrudVm.Breed}" Margin="0,0,0,5"/>
             <TextBlock Text="Date of Birth"/>
-            <DatePicker SelectedDate="{Binding CrudVm.DateOfBirth, Converter={StaticResource DateTimeToDateTimeOffset}}" Margin="0,0,0,5"/>
+            <CalendarDatePicker SelectedDate="{Binding CrudVm.DateOfBirth}" Margin="0,0,0,5"/>
             <TextBlock Text="Weight (kg)"/>
             <TextBox Text="{Binding CrudVm.WeightKg}" Margin="0,0,0,5"/>
             <TextBlock Text="Chip Number"/>

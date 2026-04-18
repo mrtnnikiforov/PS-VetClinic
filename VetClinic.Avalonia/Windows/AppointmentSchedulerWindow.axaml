@@ -1,11 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:converters="clr-namespace:VetClinic.Avalonia.Converters"
         x:Class="VetClinic.Avalonia.Windows.AppointmentSchedulerWindow"
         Title="Schedule Appointment" Height="500" Width="500">
-    <Window.Resources>
-        <converters:DateTimeToDateTimeOffsetConverter x:Key="DateTimeToDateTimeOffset"/>
-    </Window.Resources>
     <StackPanel Margin="20">
         <TextBlock Text="Schedule New Appointment" FontSize="20" FontWeight="Bold" Margin="0,0,0,20"/>
 
@@ -34,7 +30,7 @@
         </ComboBox>
 
         <TextBlock Text="Date" FontWeight="SemiBold"/>
-        <DatePicker SelectedDate="{Binding AppointmentDate, Converter={StaticResource DateTimeToDateTimeOffset}}" Margin="0,0,0,10"/>
+        <CalendarDatePicker SelectedDate="{Binding AppointmentDate}" Margin="0,0,0,10"/>
 
         <TextBlock Text="Reason" FontWeight="SemiBold"/>
         <TextBox Text="{Binding Reason}" Margin="0,0,0,10"/>

@@ -9,10 +9,13 @@ namespace VetClinic.Avalonia.Converters
         {
             if (value is DateTime dateTime)
             {
+                if (dateTime.Kind == DateTimeKind.Unspecified)
+                    dateTime = DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
+
                 return new DateTimeOffset(dateTime);
             }
 
-            return null;
+            return new DateTimeOffset(DateTime.Today);
         }
 
         public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
