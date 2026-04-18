@@ -75,7 +75,7 @@ namespace VetClinic.ViewModels
                 return;
             }
 
-            var dogAppointments = _appointmentRepository.Query(a => a.DogId == SelectedDog.Id);
+            var dogAppointments = _appointmentRepository.Query(a => a.DogId == SelectedDog.Id, "Veterinarian");
             Appointments = new ObservableCollection<Appointment>(
                 dogAppointments.OrderByDescending(a => a.DateTime));
 

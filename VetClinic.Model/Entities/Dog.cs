@@ -4,6 +4,7 @@ using VetClinic.Model.Attributes;
 
 namespace VetClinic.Model.Entities
 {
+    [IncludeNavigation("Owner")]
     public class Dog
     {
         [Key]
@@ -28,6 +29,10 @@ namespace VetClinic.Model.Entities
         [Searchable("Chip Number")]
         [Displayable("Chip Number", 5)]
         public string ChipNumber { get; set; } = string.Empty;
+
+        [NotMapped]
+        [Displayable("Owner", 6)]
+        public string OwnerName => Owner != null ? $"{Owner.FirstName} {Owner.LastName}" : string.Empty;
 
         public int OwnerId { get; set; }
 

@@ -1,7 +1,9 @@
+    using Microsoft.EntityFrameworkCore;
+
 namespace VetClinic.Model.Interfaces
 {
     public interface IDatabaseContextFactory
     {
-        object CreateContext();
+        DbContext CreateContext();
     }
 }

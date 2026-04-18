@@ -46,5 +46,12 @@ namespace VetClinic.Common
 
             return columns.OrderBy(c => c.Order).ToList();
         }
+
+        public static string[] GetNavigationIncludes(Type entityType)
+        {
+            return entityType.GetCustomAttributes<IncludeNavigationAttribute>()
+                .Select(a => a.NavigationPropertyName)
+                .ToArray();
+        }
     }
 }

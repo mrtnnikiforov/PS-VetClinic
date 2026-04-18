@@ -1,4 +1,8 @@
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using VetClinic.Common;
+using VetClinic.Model.Entities;
 using VetClinic.ViewModels;
 
 namespace VetClinic.WPF.Windows
@@ -12,6 +16,22 @@ namespace VetClinic.WPF.Windows
                 mainVm.DogRepository,
                 mainVm.AppointmentRepository,
                 mainVm.MedicalRecordRepository);
+
+            BuildColumns(AppointmentsDataGrid, typeof(Appointment));
+            BuildColumns(MedicalRecordsDataGrid, typeof(MedicalRecord));
+        }
+
+        private static void BuildColumns(DataGrid grid, Type entityType)
+        {
+            grid.Columns.Clear();
+            foreach (var col in ReflectionHelper.GetDisplayableColumns(entityType))
+            {
+                grid.Columns.Add(new DataGridTextColumn
+                {
+                    Header = col.Header,
+                    Binding = new Binding(col.PropertyName)
+                });
+            }
         }
     }
 }

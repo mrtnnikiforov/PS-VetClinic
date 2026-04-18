@@ -2,17 +2,17 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="VetClinic.Avalonia.Controls.GenericListControl">
 
-    <StackPanel Margin="10">
-        <TextBlock Text="List View" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
+    <DockPanel Margin="10">
+        <TextBlock DockPanel.Dock="Top" Text="List View" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
 
         <DataGrid x:Name="ListDataGrid"
                   SelectedItem="{Binding SelectedItem}"
                   AutoGenerateColumns="False"
-                  ColumnWidth="*"
                   IsReadOnly="True"
-                  MaxHeight="500"
                   SelectionMode="Single"
-                  CanUserResizeColumns="True"/>
+                  CanUserResizeColumns="True"
+                  CanUserSortColumns="True"
+                  HorizontalScrollBarVisibility="Auto"/>
 
-    </StackPanel>
+    </DockPanel>
 </UserControl>
