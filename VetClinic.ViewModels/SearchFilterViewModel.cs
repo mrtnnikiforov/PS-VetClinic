@@ -12,6 +12,12 @@ namespace VetClinic.ViewModels
         private readonly Type _entityType;
         private readonly object _repository;
         private readonly MethodInfo _queryMethod;
+        private readonly MethodInfo _queryWithIncludesMethod;
+        private readonly MethodInfo _getAllMethod;
+        private readonly MethodInfo _getAllWithIncludesMethod;
+        private readonly string[] _navigationIncludes;
+
+        public Type EntityType => _entityType;
 
         public ObservableCollection<FilterFieldInfo> FilterFields { get; }
 
@@ -45,8 +51,14 @@ namespace VetClinic.ViewModels
             _entityType = entityType;
             _repository = repository;
 
-            _queryMethod = repository.GetType().GetMethod("Query")
-                ?? throw new InvalidOperationException("Repository must have a Query method");
+            var methods = repository.GetType().GetMethods();
+
+            _queryMethod = methods.First(m => m.Name == "Query" && m.GetParameters().Length == 1);
+            _queryWithIncludesMethod = methods.First(m => m.Name == "Query" && m.GetParameters().Length == 2);
+            _getAllMethod = methods.First(m => m.Name == "GetAll" && m.GetParameters().Length == 0);
+            _getAllWithIncludesMethod = methods.First(m => m.Name == "GetAll" && m.GetParameters().Length == 1);
+
+            _navigationIncludes = ReflectionHelper.GetNavigationIncludes(entityType);
 
             FilterFields = new ObservableCollection<FilterFieldInfo>(
                 ReflectionHelper.GetSearchableFields(entityType));
@@ -138,15 +150,21 @@ namespace VetClinic.ViewModels
 
             if (combinedFilter == null)
             {
-                var getAllMethod = _repository.GetType().GetMethod("GetAll")!;
-                var allResults = (System.Collections.IList)getAllMethod.Invoke(_repository, null)!;
+                System.Collections.IList allResults;
+                if (_navigationIncludes.Length > 0)
+                    allResults = (System.Collections.IList)_getAllWithIncludesMethod.Invoke(_repository, new object[] { _navigationIncludes })!;
+                else
+                    allResults = (System.Collections.IList)_getAllMethod.Invoke(_repository, null)!;
                 Results = new ObservableCollection<object>(allResults.Cast<object>());
             }
             else
             {
-
                 var lambda = Expression.Lambda(combinedFilter, parameter);
-                var results = (System.Collections.IList)_queryMethod.Invoke(_repository, new object[] { lambda })!;
+                System.Collections.IList results;
+                if (_navigationIncludes.Length > 0)
+                    results = (System.Collections.IList)_queryWithIncludesMethod.Invoke(_repository, new object[] { lambda, _navigationIncludes })!;
+                else
+                    results = (System.Collections.IList)_queryMethod.Invoke(_repository, new object[] { lambda })!;
                 Results = new ObservableCollection<object>(results.Cast<object>());
             }
 

@@ -5,6 +5,7 @@ using VetClinic.Model.Enums;
 
 namespace VetClinic.Model.Entities
 {
+    [IncludeNavigation("Veterinarian")]
     public class Appointment
     {
         [Key]
@@ -26,6 +27,11 @@ namespace VetClinic.Model.Entities
 
         [Displayable("Notes", 4)]
         public string Notes { get; set; } = string.Empty;
+
+        [NotMapped]
+        [Displayable("Veterinarian", 5)]
+        public string VeterinarianName => Veterinarian != null
+            ? $"{Veterinarian.FirstName} {Veterinarian.LastName}" : string.Empty;
 
         public int DogId { get; set; }
 

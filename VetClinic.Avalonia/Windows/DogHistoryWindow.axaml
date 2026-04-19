@@ -16,11 +16,11 @@
         </StackPanel>
 
         <HeaderedContentControl Grid.Row="1" Header="Appointments" Margin="10,5">
-            <DataGrid ItemsSource="{Binding Appointments}" AutoGenerateColumns="True" IsReadOnly="True" CanUserResizeColumns="True"/>
+            <DataGrid x:Name="AppointmentsDataGrid" ItemsSource="{Binding Appointments}" AutoGenerateColumns="False" IsReadOnly="True" CanUserResizeColumns="True"/>
         </HeaderedContentControl>
 
         <HeaderedContentControl Grid.Row="2" Header="Medical Records" Margin="10,5">
-            <DataGrid ItemsSource="{Binding MedicalRecords}" AutoGenerateColumns="True" IsReadOnly="True" CanUserResizeColumns="True"/>
+            <DataGrid x:Name="MedicalRecordsDataGrid" ItemsSource="{Binding MedicalRecords}" AutoGenerateColumns="False" IsReadOnly="True" CanUserResizeColumns="True"/>
         </HeaderedContentControl>
     </Grid>
 </Window>
