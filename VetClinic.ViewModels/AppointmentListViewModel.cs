@@ -50,7 +50,7 @@ namespace VetClinic.ViewModels
 
         public void LoadData()
         {
-            Appointments = new ObservableCollection<Appointment>(_repository.GetAll());
+            Appointments = new ObservableCollection<Appointment>(_repository.GetAll("Veterinarian"));
         }
 
         private void CompleteAppointment()

@@ -85,7 +85,7 @@ namespace VetClinic.ViewModels
         {
             try
             {
-                Dogs = new ObservableCollection<Dog>(_repository.GetAll());
+                Dogs = new ObservableCollection<Dog>(_repository.GetAll("Owner"));
             }
             catch (Exception ex)
             {
